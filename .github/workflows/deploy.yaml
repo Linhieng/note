@@ -43,7 +43,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Build with VitePress
-        run: npm run docs:build -- --base /Lim-note-interview/
+        run: npm run docs:build -- --base /lim-note-interview/
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
