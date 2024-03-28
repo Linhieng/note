@@ -16,6 +16,7 @@ const basenameMapping = (_basename) => {
         case 'base': return '概览'
 
         case 'my': return '个人整理'
+        case 'my2': return '个人整理2'
 
         default: return _basename
     }
