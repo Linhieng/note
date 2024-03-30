@@ -5,6 +5,7 @@
 面经/基础网站：
 
 - [web前端面试 - 面试官系列](https://vue3js.cn/interview/)
+- [小林 x 图解计算机基础](https://xiaolincoding.com/)
 - [大厂面试每日一题](https://q.shanyue.tech/)
 - [木易杨前端进阶](https://muyiy.cn/)
 - [前端进阶之旅](https://interview.poetries.top/) 付费，但免费的已经够看了
