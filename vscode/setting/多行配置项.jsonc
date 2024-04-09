@@ -1,0 +1,228 @@
+{
+
+    "editor.codeActionsOnSave": {
+        // 并不适用与所有 fixAll，通常是搭配 ts 语言和 ESLint 插件
+        "source.organizeImports": "always",
+        "source.fixAll": "always"
+    },
+
+    // explorer.autoReveal 配置默认是为 true 的, 也就是所有的文件和文件夹, 当打开他们的时候, 所对应的文件和文件夹将会 reveal 和 selected
+    // 在这里 reveal 和 select 的意思是, 对应的文件和文件夹将会自定被聚焦, 举一个例子来说明更加容易理解
+    // 当我们在一个 js 文件中, 点击某个包, 它会立即打开对应的源文件, 这个源文件是在 node_modules 文件夹中的
+    // 并且在以前, 这个文件所对应的位置, 也会在文件栏中显示出来, 并且焦点在文件上, 这就是所谓的 reveal 和 select
+    // 但是新版本1.74之后, 对于在 node_modules 中的文件, 将不会自动 reveal 和 select
+    // 我们能感受到的就是, 当我们跳转到 node_modules 中的文件时, node_modules 就不会展开它那巨大的文件夹!
+    // 而在以前, 每当我们打开 node_modules 的文件时, 文件栏的 node_modules 都会展开它那巨长的子文件
+    // 这导致我们每次都要去把它折叠起来, 之前我的应对措施时直接隐藏掉 node_modules。
+    // 附上这个方案被提出的 issue: https://github.com/microsoft/vscode/issues/87956
+    // 新版本解决的说明: https://code.visualstudio.com/updates/v1_74#_custom-explorer-autoreveal-logic
+    "explorer.autoRevealExclude": {
+        "**/node_modules": true
+    },
+
+    // 将某些文件折叠起来
+    "explorer.fileNesting.patterns": {
+        ".prettierrc": ".prettierignore",
+        "*.mjs": "${capture}.mjs.map, ${capture}.min.mjs",
+        "*.cjs": "${capture}.cjs.map, ${capture}.min.cjs",
+        "*.scss": "${capture}.css.map, ${capture}.css, ${capture}.min.css",
+        "*.sass": "${capture}.css.map, ${capture}.css, ${capture}.min.css"
+    },
+
+    // 一些特殊字符，比如全角字符与半角字符在一起时，vscode 会进行高亮。如果不想某些字符高亮，则可以将其添加到这里面
+    "editor.unicodeHighlight.allowedCharacters": {
+        "（": true,
+        "）": true,
+        "，": true
+    },
+
+    "files.exclude": {
+        // 在这里, true 的优先级比 false 的优先级高, 并不会根据精准度进行匹配
+        "**/.git": true,
+        "**/.vscode": true,
+        // 只显示 s 和 m 开头的两个文件夹, 其他的都隐藏
+        "[^src|markdown]*": true
+    },
+
+    /*
+        配置语言的文件关联, 比如将 vue 与 html 关联, 这样在 vue 中可以选择 html 的格式化工具
+        但是这样会带来一个问题, 当在 vue 中使用 ts 语法时, vscode 却会提示 ts 语法仅允许在 ts 文件中使用
+        此时如果注销 "*.vue": "html" 就没事.
+        或者关闭 html 的脚本验证 "html.validate.scripts": false
+    */
+    "files.associations": {
+        "*.vue": "html",
+        ".eslintrc.cjs": "javascript"
+    },
+
+    // 覆盖当前所选颜色主题的颜色。
+    "workbench.colorCustomizations": {
+        // 搜索时，当前选中的匹配项的边框颜色
+        "editor.findMatchBorder": "#FFFFFF",
+        // 搜索时，当前选中的匹配项的背景颜色
+        "editor.findMatchBackground": "#ffffff11",
+
+        // 匹配时（高亮），与当前所选项内容相同的匹配项的边框颜色，
+        "editor.selectionHighlightBorder": "#ff0000",
+        // 匹配时（高亮），与当前所选项内容相同的匹配项的背景颜色，
+        "editor.selectionHighlightBackground": "#ff000099",
+
+        // 鼠标选择时，当前所选中的内容的背景颜色。
+        "editor.selectionBackground": "#ff00ff99"
+    },
+
+    // 指定打开文件的方式
+    "workbench.editorAssociations": {
+        // 使用 Excel Viewer 扩展工具打开 csv 文件
+        "*.csv": "gc-excelviewer-csv-editor"
+    },
+
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////// 特定文件类型
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    // 一些通用配置项，可以组合起来
+    "[html][javascript][typescript][json][jsonc][vue][typescriptreact][javascriptreact][scss][less][css]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[scss][css][markdown][javascript][typescript][json][jsonc][vue][typescriptreact][javascriptreact][sql]": {
+        "editor.tabSize": 4,
+        "editor.detectIndentation": false
+    },
+
+    "[vue]": {
+        // 保存时执行的行为
+        "editor.codeActionsOnSave": {
+            // 保存时, 自动执行 eslint 插件的 "修复全部" 功能, ~~但如何找到 "source.fixAll.eslint" 不清楚~~ 这可能是 eslint 插件提供的功能。
+            "source.fixAll.eslint": true,
+            "source.fixAll.stylelint": true
+        }
+    },
+    // 添加这个仅仅是移动旧笔记。具体配置什么作用，以前又为什么要这么设置还不清楚。所以先留着，后面有时间再整理。
+    "[c]": {
+        "editor.wordBasedSuggestions": false,
+        "editor.suggest.insertMode": "replace",
+        "editor.semanticHighlighting.enabled": true
+    },
+
+    "[markdown]": {
+        // 当配置了 snippets 后，会发现 markdown 文件中不会自动显示 suggest。这就是因为下面这个配置
+        "editor.quickSuggestions": {
+            // 配置在哪些上下文中快速显示 suggest, 该配置项需要 "editor.suggestOnTriggerCharacters": true
+            "comments": "off", // 在注释上下文中不开启快速建议。
+            "strings": "off", // 在字符串上下文中不开启快速建议
+            "other": "on" // 我们大多数情况下需要的是这个。
+        }
+    },
+
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////// 插件
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    "cSpell.flagWords": [
+        // 自定义一些错误的单词，并提供正确的单词
+        "destory->destroy"
+    ],
+
+    "markdownlint.config": {
+        "MD007": false
+    },
+
+    // * ******************** emeraldwalk.runonsave ******************** * \\
+    "emeraldwalk.runonsave": {
+        /*
+        ${workspaceFolder}: the path of the workspace folder of the saved file
+            vscode 中的当前打开的文件夹路径
+        ${file}: path of saved file
+            触发该插件的文件的完整路径，包括后缀名
+        ${fileBasename}: saved file's basename
+            触发该插件的文件名，包含后缀名
+        ${fileBasenameNoExt}: saved file's basename without extension
+            触发该插件的文件名，不包含后缀名
+        ${fileDirname}: directory name of saved file
+            触发该插件的文件所在目录
+        ${fileExtname}: extension (including .) of saved file
+            触发该插件的文件后缀名
+        ${relativeFile} - the current opened file relative to ${workspaceFolder}
+            触发该插件的文件相对于 ${workspaceFolder} 的（相对）路径
+        ${cwd}: current working directory (this is the working directory that vscode is running in not the project directory)
+            vscode 的运行目录，即 `code.exe` 所在目录
+
+        ${env.Name}
+            环境变量值
+        */
+
+        "shell": "C:\\Program Files\\PowerShell\\7\\pwsh.exe",
+        "autoClearConsole": true,
+        "commands": [
+            {
+                // 输出内容是在 OUTPUT 的子窗口　—— RUN ON SAVE。下面这个是个输出案例，同时可以查看所以得占位符的值。
+                "match": ".*",
+                "cmd": "echo \" \nworkspaceRoot: \t\t ${workspaceRoot} \nworkspaceFolder: \t ${workspaceFolder} \nfile: \t\t\t\t ${file} \nfileBasename: \t\t ${fileBasename} \nfileDirname: \t\t ${fileDirname} \nfileExtname: \t\t ${fileExtname} \nfileBasenameNoExt: \t ${fileBasenameNoExt} \nrelativeFile: \t\t ${relativeFile} \ncwd: \t\t\t\t ${cwd}\""
+            },
+            {
+                "match": "\\.scss$",
+
+                // 常规使用
+                "cmd": "sass \"${file}\" \"${fileDirname}\\${fileBasenameNoExt}.css\""
+
+                // 不输出映射文件
+                // "cmd": "sass \"${file}\" \"${fileDirname}\\${fileBasenameNoExt}.css\" --no-source-map "
+
+                // 输出到 css 文件夹
+                // "cmd": "md \"${workspaceFolder}\\css\" -force && sass \"${file}\" \"${workspaceFolder}\\css\\${fileBasenameNoExt}.css\""
+            }
+        ]
+    },
+
+    // * ****************** formulahendry.code-runner ****************** * \\
+    /*
+        缺陷：
+            某些变量有引号，拼接起来很麻烦
+            不支持指定运行 shell。（可以通过 code-runner.runInTerminal: true 解决）
+
+        $workspaceRoot: The path of the folder opened in VS Code
+            当前 vscode 打开的文件夹目录，如 d:\CodeProject
+        $dir: The directory of the code file being run
+            有引号！触发该插件的文件所在目录，如 "d:\CodeProject\python\"
+        $dirWithoutTrailingSlash: The directory of the code file being run without a trailing slash
+            有引号！在 $dir 上减去尾随 \，如 "d:\CodeProject\python"
+        $fullFileName: The full name of the code file being run
+            有引号！触发该插件的文件的绝对路径（完整路径），如 "d:\CodeProject\python\Student.py"
+        $fileName: The base name of the code file being run, that is the file without the directory
+            触发该插件的文件的文件名，如 Student.py
+        $fileNameWithoutExt: The base name of the code file being run without its extension
+            在 $fileName 上减去文件后缀名，如 Student
+        $driveLetter: The drive letter of the code file being run (Windows only)
+            被运行文件所在盘符，如 d:
+        $pythonPath: The path of Python interpreter (set by Python: Select Interpreter command)
+            如 Python
+    */
+
+    // Set the executor of each language. 设置各个语言运行代码（运行器）。
+    "code-runner.executorMap": {
+        // 该配置中的 key 值是 editorLangId，各个语言的 editorLangId 值可以通过 'ctrl+k m' 查看
+
+        // 在 output 终端默认编码格式是 GBK，暂时没有找到更改 output 终端默认编码格式的方案（除非系统级别上设置为 UTF-8 编码）
+        "python": "set PYTHONIOENCODING=utf8 && python -u",
+
+        // vscode-ts2js 不存在会自动创建。
+        "typescript": "cd $dir && tsc $fileName --outFile C:/Users/Public/vscode-ts2js/$fileNameWithoutExt.js && node C:/Users/Public/vscode-ts2js/$fileNameWithoutExt.js",
+
+        // gcc 默认输出的 a.exe 文件名。 通过 -o name 可以指定输出的文件名为 name.exe
+        "c": "cd $dir && gcc $fileName -o C:/Users/Public/vscode-c-exe/$fileNameWithoutExt && C:/Users/Public/vscode-c-exe/$fileNameWithoutExt"
+    }
+}

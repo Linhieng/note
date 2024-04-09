@@ -1,0 +1,352 @@
+/* spell-checker:ignore pageup */
+// 已经铭记于心的、太过于常见的不写，比如最常见的 ctrl+a/z/x/c/v//y/f/h/w/t/...... 这些都是非常常见的。 (小历史，曾经的 ctrl+w 不是 VScode 默认的关闭标签页快捷键)
+// 不过当已经写过的东西变得熟悉后，会放到下面。
+[
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** 新的习惯养成系列
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // breadcrumbs ，就是当前文件的导航，比如打开某个文化时，上面会显示当前文件所在层次，如 a > b > c.jsonc 这样子。这个就是 breadcrumbs
+        // 这个快捷键可以不借助鼠标来用来打开其他文件
+        // oem_period 是小数点【.】按键。
+        // 这个功能感觉会很有用，应该熟练起来
+        "key": "ctrl+shift+oem_period",
+        "command": "breadcrumbs.focusAndSelect",
+        "when": "breadcrumbsPossible && breadcrumbsVisible"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** ctrl 系列
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // 触发提示，非常有用！✨✨✨✨✨✨✨✨
+        "key": "ctrl+i",
+        "command": "editor.action.triggerSuggest",
+        "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+    },
+    {
+        // 切换侧边栏(文件栏)的显示与隐藏，非常有用✨✨✨✨✨✨。
+        "key": "ctrl+b",
+        "command": "workbench.action.toggleSidebarVisibility"
+    },
+    {
+        // 打开曾经打开过的文件夹。非常有用✨✨✨✨✨✨
+        "key": "ctrl+r",
+        "command": "workbench.action.openRecent"
+    },
+    {
+        // 切换 "Terminal" 窗口的显示和隐藏
+        "key": "ctrl+oem_3",
+        "command": "workbench.action.terminal.toggleTerminal",
+        "when": "terminal.active"
+    },
+    {
+        // 快速修复，一般用来查看有哪些修复错误的措施。挺有用的✨✨✨✨
+        // oem_period 是小数点【.】按键
+        "key": "ctrl+oem_period",
+        "command": "editor.action.quickFix",
+        "when": "editorHasCodeActionsProvider && textInputFocus && !editorReadonly"
+    },
+    {
+        // 删除一个单词。相当于 ctrl+shift+left+backspace 的组合。虽然挺好用的，但没怎么用。
+        // 因为 ctrl+shift+left+backspace 虽然按键比较多，但是它能让你看到会删除的内容。
+        // 但如果直接使用 ctrl+backspace 的话，要是删除多了，还得撤销，最后还是要换回　ctrl+shift+left+backspace　的方式。
+        "key": "ctrl+backspace",
+        "command": "deleteWordLeft",
+        "when": "textInputFocus && !editorReadonly"
+    },
+    {
+        // 切换标签页/窗口，以前的习惯是 alt+left（IDEA 的快捷键） 但现在改过来了
+        "key": "ctrl+pageup",
+        "command": "workbench.action.previousEditor"
+    },
+    {
+        // 同 "ctrl+pageup" 是一对的。
+        "key": "ctrl+pagedown",
+        "command": "workbench.action.nextEditor"
+    },
+    {
+        // 放大，有用！✨。因为 VScode 的字体大写是不统一的，比如 keyboard 界面的快捷键 ID 真的很小。
+        // oem_plus 是【+】按键
+        "key": "ctrl+oem_plus",
+        "command": "workbench.action.zoomIn"
+    },
+    {
+        // 放小，有用！✨
+        // oem_minus 是【-】按键
+        "key": "ctrl+oem_minus",
+        "command": "workbench.action.zoomOut"
+    },
+    {
+        // 切换 Panel 的显示与隐藏。 ✨
+        "key": "ctrl+j",
+        "command": "workbench.action.togglePanel"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** alt 系列
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // 将当前行上移，非常有用，与其他非常有用的快捷键组合时极强！✨✨✨✨✨✨✨✨✨✨✨✨
+        "key": "alt+up",
+        "command": "editor.action.moveLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        // 将当前行下移，非常有用，与其他非常有用的快捷键组合时极强！✨✨✨✨✨✨✨✨✨✨✨✨
+        "key": "alt+down",
+        "command": "editor.action.moveLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        // 很有用，在 markdown 中写内容时，当表格太大时，就不换行，当没有使用表格时就换行！✨✨✨✨✨✨✨
+        "key": "alt+z",
+        "command": "editor.action.toggleWordWrap"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** shift+alt 系列
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // 打开本地文件管理器，不是很常用，但要用到时很有用
+        "key": "shift+alt+r",
+        "command": "revealFileInOS",
+        "when": "!editorFocus" // 没有更改默认的 when 配置，所以需要通过快捷键(alt+~)定位到侧边栏才有效。
+    },
+    {
+        // 向上拷贝当前行，有用 ✨
+        "key": "shift+alt+up",
+        "command": "editor.action.copyLinesUpAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        // 向下拷贝当前行，有用 ✨
+        "key": "shift+alt+down",
+        "command": "editor.action.copyLinesDownAction",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        // 自动修复，用到的情况比较少。是命令 Auto Fix... 的快捷键
+        "key": "shift+alt+oem_period",
+        "command": "editor.action.autoFix",
+        "when": "textInputFocus && !editorReadonly && supportedCodeAction =~ /(\\s|^)quickfix\\b/"
+    },
+    {
+        // 格式化
+        "key": "shift+alt+f",
+        "command": "editor.action.formatDocument"
+    },
+    {
+        // 智能选择单词。普通的 ctrl+shift+right 会选中整个单词，比如 CodeEditor 会选中整个。
+        // 但是通过快捷键  shift+alt+right 可以只选中 Code 而不选中 Editor　。
+        // 如果不生效，需要检查 editor.smartSelect.selectSubwords 配置项是否为 true
+        "key": "shift+alt+right",
+        "command": "editor.action.smartSelect.expand",
+        "when": "editorTextFocus"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** ctrl+alt 系列（短小精悍！）
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // 向上增加一个光标光标，最有用的功能之一！✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
+        // 还有一个使用方式，是 ctrl+alt+鼠标点击，这个在需要选中很多行时非常有用✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
+        "key": "ctrl+alt+up",
+        "command": "editor.action.insertCursorAbove",
+        "when": "editorTextFocus"
+    },
+    {
+        // 向下增加一个光标光标，最有用的功能之一！✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨✨
+        "key": "ctrl+alt+down",
+        "command": "editor.action.insertCursorBelow",
+        "when": "editorTextFocus"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** ctrl + shift 系列
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // 触发参数提示，有用✨
+        "key": "ctrl+shift+space",
+        "command": "editor.action.triggerParameterHints",
+        "when": "editorHasSignatureHelpProvider && editorTextFocus"
+    },
+    {
+        // 选中所有匹配项，非常有用✨✨✨✨✨
+        "key": "ctrl+shift+l",
+        "command": "editor.action.selectHighlights", // selectAllSearchEditorMatches
+        "when": "editorFocus"
+    },
+    {
+        // 切换 output 窗口的显示与隐藏
+        "key": "ctrl+shift+u",
+        "command": "workbench.action.output.toggleOutput",
+        "when": "workbench.panel.output.active"
+    },
+    {
+        // 创建新的终端 oem_3 表示 ~ 按键
+        "key": "ctrl+shift+oem_3",
+        "command": "workbench.action.terminal.new",
+        "when": "terminalProcessSupported || terminalWebExtensionContributedProfile"
+    },
+    {
+        // 打开原生终端窗口，目录是当前工作区
+        "key": "ctrl+shift+c",
+        "command": "workbench.action.terminal.openNativeConsole",
+        "when": "!terminalFocus"
+    },
+    {
+        // 曾经将这个快捷键改为 shift+enter。 但现在已经将习惯改回成默认快捷键了！ respect!
+        "key": "ctrl+shift+enter",
+        "command": "editor.action.insertLineBefore",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        // 打开新窗口
+        "key": "ctrl+shift+n",
+        "command": "workbench.action.newWindow"
+    },
+    {
+        // 快速跳到配对的括号，比如 () [] {}
+        "key": "ctrl+shift+\\",
+        "command": "editor.action.jumpToBracket",
+        "when": "editorTextFocus"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** 下面是组合键
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        //　折叠/展开当前最近的　“可展开折叠区域”
+        "key": "ctrl+k ctrl+l",
+        "command": "editor.toggleFold",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        // 全部折叠
+        "key": "ctrl+k ctrl+0",
+        "command": "editor.foldAll",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        // 全部展开
+        "key": "ctrl+k ctrl+j",
+        "command": "editor.unfoldAll",
+        "when": "editorTextFocus && foldingEnabled"
+    },
+    {
+        // 打开键盘快捷方式，是命令 Preferences: Open Keyboard Shortcuts 的快捷键。
+        // 我的快捷键几乎全是从这个窗口中提取出来的。
+        "key": "ctrl+k ctrl+s",
+        "command": "workbench.action.openGlobalKeybindings"
+    },
+    {
+        // 格式化所选内容
+        "key": "ctrl+k ctrl+f",
+        "command": "editor.action.formatSelection",
+        "when": "editorHasDocumentSelectionFormattingProvider && editorTextFocus && !editorReadonly"
+    },
+    {
+        // 进入全屏专注模式 / 沉浸式体验！　感觉很有用，但没怎么用到，反倒是 ctrl+B 用的多。 ✨
+        "key": "ctrl+k z",
+        "command": "workbench.action.toggleZenMode"
+    },
+    {
+        // 全部保存，当你打开多个标签页时就有用。
+        "key": "ctrl+k s",
+        "command": "saveAll"
+    },
+    {
+        // 选择当前文件的语言类型，某些情况下有用 —— 替代鼠标
+        "key": "ctrl+k m",
+        "command": "workbench.action.editor.changeLanguageMode",
+        "when": "!notebookEditorFocused"
+    },
+
+
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************** 插件提供的快捷键
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+    // * ************************************************************** * \\
+
+
+    {
+        // 运行代码
+        "key": "ctrl+alt+n",
+        "command": "code-runner.run"
+    },
+
+    {
+        // 终止代码运行。 因为习惯将程序输出在 output 中，所以这个命令挺有用的。
+        "key": "ctrl+alt+m",
+        "command": "code-runner.stop"
+    }
+
+]

@@ -1,0 +1,63 @@
+/**
+ * @author:  Linhieng
+ * @data:    2022-09-12 16:19
+ * @文件说明: 编辑器的颜色主题，现在没用上了，这里的都是旧的，不要改变这个文件了，新的已经移到 “外观颜色的配置.jsonc”
+ */
+
+{
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#333", // 活动栏背景色
+        "titleBar.activeBackground": "#23272e", // 状态栏背景色
+        "tab.activeBackground": "#000", // 活动选项卡背景色
+        "tab.inactiveBackground": "#2d2d2d", // 非活动选项卡背景色
+        // "tab.hoverBackground": "", // 选项卡 hover 背景色, 不允许设置这个值
+
+        "editorLineNumber.foreground": "#858585",
+        "editor.findMatchBorder": "#ff0000",
+        "editor.selectionHighlightBackground": "#ffffff00",
+        "editor.selectionHighlightBorder": "#eeff00",
+        "editor.lineHighlightBackground": "#ffffff22",
+        "editor.background": "#111",
+        "editor.lineHighlightBorder": "#00c3ff", // 光标所在行的边框色
+        "editorCursor.foreground": "#ff0000",
+        "editorOverviewRuler.background": "#000000", // 右侧滚动条的背景颜色
+        "editorBracketMatch.border": "#00ff00",
+        "editorBracketMatch.background": "#00ff0055",
+        "editorHoverWidget.background": "#000000",
+        "editorLineNumber.activeForeground": "#00ffeacc",
+        "editorWhitespace.foreground": "#aaaaaa",
+        "editorIndentGuide.activeBackground": "#fffb0000", // 活动参考线不准确，那还不如不显示
+
+
+
+        "scrollbarSlider.background": "#567ea3",
+        "scrollbarSlider.hoverBackground": "#3e7fbd",
+        "scrollbarSlider.activeBackground": "#1f85e4",
+
+        "terminal.selectionBackground": "#ffffff44",
+        "terminalCursor.foreground": "#e70202",
+        "terminal.background": "#000",
+        "tree.indentGuidesStroke": "#e8d903", // 侧边栏缩进参考线颜色
+        "terminal.foreground": "#00d52e", // 终端能看见的大多数字体颜色
+        "terminal.ansiBrightBlack": "#eaee1f", // 带 --xxx 的有颜色
+        "terminal.ansiBrightYellow": "#03dbdb", // 第一个命令的颜色
+
+        // 和某些列 list 有关的
+        "list.activeSelectionBackground": "#094771", // ctrl+shift+p 时当前选择项的背景色
+        "list.activeSelectionForeground": "#d7dae0", // ctrl+shift+p 时当前选择项的前景色
+        "list.hoverForeground": "#0da4d1", // 输入移入时侧边栏文件前景色
+        "list.highlightForeground": "#18a3ff", // 弹出提示时高亮前景色
+        "editorSuggestWidget.selectedBackground": "#094771", // 弹出建议时所选条目背景色
+
+        // 窗口最下面状态栏
+        "statusBar.background": "#007acc",
+        "statusBar.foreground": "#fafafa",
+        "statusBar.noFolderBackground": "#68217a",
+        "statusBarItem.remoteBackground": "#16825d",
+        "statusBarItem.remoteForeground": "#FFFFFF",
+
+        // 侧边栏文件树
+        "sideBar.background": "#00000011",
+        "sideBar.foreground": "#c2c2c2",
+    }
+}

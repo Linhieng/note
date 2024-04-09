@@ -1,0 +1,69 @@
+// prettier-ignore
+{
+    // 全局变量
+    "time": {
+        "prefix": "sj",
+        "body": "$CURRENT_YEAR-$CURRENT_MONTH-$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND"
+    },
+    "file basename": {
+        "prefix": "fileBasename",
+        "body": "$TM_FILENAME",
+    },
+    "file basename no extension": {
+        "prefix": "fileBasenameNoExtension",
+        "body": "$TM_FILENAME_BASE",
+    },
+    "comment": {
+        "prefix": "//",
+        "body": "// $0 ------------------------------------",
+    },
+
+    // 前端
+    "注释": {
+        "prefix": "/**",
+        "body": [
+            "/**",
+            " * $0",
+            " */",
+        ]
+    },
+    "请使用 anfn 代替 jt": {
+        "scope": "javascript,typescript,vue",
+        "prefix": "jt",
+        "body": [
+            "($1) => {$2}"
+        ],
+        "description": "请使用插件提供的 anfn 代码片段，而不是自定义代码片段！"
+    },
+    "初始化 HTML 文件": {
+        "scope": "html",
+        "prefix": [ "!", "！" ],
+        "body": [
+            "<!DOCTYPE html>",
+            "<html lang='zh-CN'>",
+            "",
+            "<head>",
+            "  <meta charset='UTF-8'>",
+            "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
+            "  <title>${1:Document}</title>",
+            "</head>",
+            "",
+            "<body>",
+            "  $2",
+            "</body>",
+            "",
+            "</html>"
+        ],
+        "description": "默认语言为中文的模板"
+    },
+
+    // markdown
+    "可缩进空格": {
+        "scope": "markdown",
+        "prefix": [ "  ", "kg", "empty", "emsp" ],
+        "body": [
+            "&emsp;&emsp;"
+        ],
+        "description": "某些情况下想要使用空格缩进，但由不想让 md 文件忽略这些空格时，可以使用 emsp 空格"
+    },
+}
