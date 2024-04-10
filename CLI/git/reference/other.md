@@ -51,6 +51,7 @@ $ git stash list
 # 显示当前所有藏匿的更改列表。
 $ git stash drop stash@{n}
 # 删除指定的藏匿，其中n是藏匿的索引号，从0开始计数。
+# 也可以写成 git stash drop ${0}
 ```
 
 ## ls-remote
