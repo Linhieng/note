@@ -198,6 +198,17 @@ function get_lnk_target($fullpath) {
 ### 硬链接、软连接、快捷方式和普通文件
 
 ```powershell
+New-Item -ItemType SymbolicLink -Path ".\link-a.txt" -Value ".\a.txt"
+New-Item -ItemType SymbolicLink -Target (npm root -g) -Path "$HOME\.node_modules"
+# 通过管理员权限，为 a.txt 创建一个符号链接
+
+
+New-Item -ItemType HardLink -Path "hard-a.txt" -Value ".\a.txt"
+New-Item -ItemType HardLink -Value D:\github-code\toy\AutoTask\scripts\auto-push.ps1 -Path D:\.scripts\auto-push.ps1
+# 无需管理员权限，为 a.txt 创建一个硬链接
+```
+
+```powershell
 echo 'hello' > a.txt
 (Get-Item "a.txt").LinkType -eq $null
 # 普通文件的链接类型为空
