@@ -902,8 +902,11 @@ public static Node bothLoop(Node head1, Node loop1, Node head2, Node loop2) {
     }
 }
 ```
+<!--
+已迁移！
 
 ## 🍕 二叉树(节点形式)
+
 
 前面的二叉树, 是数组形式的, 这里的二叉树, 是节点形式的。 节点结构如下:
 ```java
@@ -1157,3 +1160,5 @@ def binary_tree_max_width2(root):
 
     return max_w
 ```
+
+-->
