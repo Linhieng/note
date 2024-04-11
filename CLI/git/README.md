@@ -129,8 +129,14 @@ $ git config --global http.proxy http://127.0.0.1:7890
 $ git config --global --unset http.proxy
 # 只在全局配置文件上删除 http.proxy 配置项
 
-$ git config --global core.editor 'code'
+$ git config --global core.editor 'code -w'
 # 使用 vscode 编辑配置文件，而不是 vim。（记得先将 vscode 添加至 path）
+# 注意这里要使用 code -w ，原因是 git 的很多操作都是通过判断 hint editor
+# 是否关闭，来决定是否进入下一步操作的。所以我们需要添加 --wait 参数来
+# 使编辑器处于等待模式。
+
+$ git config --global --unset core.editor
+# 恢复默认 vim 编辑配置文件
 
 git config --global core.excludesFile "$Env:USERPROFILE\.gitignore_global"
 # 添加全局 git 忽略文件。文件需自己创建。通常指定： node_modules 和 desktop.ini
