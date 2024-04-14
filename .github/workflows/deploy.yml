@@ -32,16 +32,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # 启用 lastUpdated 需要开启这项
-      - uses: pnpm/action-setup@v3 # 使用 pnpm
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm # 使用 pnpm 
+          cache: npm
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Install dependencies
-        run: pnpm install # 不使用 ci，因为我没有上传 lock 文件
+        run: npm install # 不使用 ci，因为我没有上传 lock 文件
       - name: Build with VitePress
         run: npm run docs:build -- --base /note/
       - name: Upload artifact
