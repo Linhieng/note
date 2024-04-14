@@ -568,4 +568,4 @@ function KMP3(str, pattern) {
 
 对数器代码如下：
 
-<<< ./code/other/KMP.js
+<<< ../code/other/KMP.js
