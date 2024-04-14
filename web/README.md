@@ -1,5 +1,8 @@
 # WEB 开发
 
+TODO:
+- [ ] 慢慢地，web 相关内容又写在了 onenote 中，导致这里的内容已经“过时”，需要整理！
+
 下面列出了这么多的内容，不代表每一个都会详细的在这里记录！大部分内容都应该是在官方文档中查看的。
 
 - 打包（bundler）[可参考的文章](https://www.zhoulujun.cn/html/tools/Bundler/vite/8770.html)
