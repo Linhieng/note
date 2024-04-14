@@ -66,6 +66,9 @@ function isDir(url) {
 export default defineConfig({
     title: "我的笔记",
     description: "A VitePress Site",
+    markdown: {
+        math: true
+    },
 
     themeConfig: {
         nav: getNav(),
