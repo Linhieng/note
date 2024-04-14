@@ -1,0 +1,49 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cargo",
+			"command": "run",
+			"args": [
+				"--package",
+				"variables",
+				"--bin",
+				"variables"
+			],
+			"env": {
+				"RUST_BACKTRACE": "short",
+				"HOSTNAME": "044004e12e1c",
+				"HOME": "/home/vscode",
+				"RUSTUP_HOME": "/usr/local/rustup",
+				"PATH": "/vscode/vscode-server/bin/linux-x64/863d2581ecda6849923a2118d93a088b0745d9d6/bin/remote-cli:/usr/local/cargo/bin:/usr/local/cargo/bin:/usr/local/cargo/bin:/usr/local/cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/vscode/.local/bin",
+				"VSCODE_AGENT_FOLDER": "/home/vscode/.vscode-server",
+				"SHELL": "/bin/bash",
+				"RUST_VERSION": "1.75.0",
+				"PWD": "/vscode/vscode-server/bin/linux-x64/863d2581ecda6849923a2118d93a088b0745d9d6",
+				"CARGO_HOME": "/usr/local/cargo",
+				"VSCODE_HANDLES_SIGPIPE": "true",
+				"VSCODE_AMD_ENTRYPOINT": "vs/workbench/api/node/extensionHostProcess",
+				"VSCODE_HANDLES_UNCAUGHT_ERRORS": "true",
+				"VSCODE_NLS_CONFIG": "{\"locale\":\"en\",\"osLocale\":\"en\",\"availableLanguages\":{}}",
+				"REMOTE_CONTAINERS_IPC": "/tmp/vscode-remote-containers-ipc-01c75401-8980-4bd2-a51b-1e351d0e5863.sock",
+				"LS_COLORS": "",
+				"REMOTE_CONTAINERS_SOCKETS": "[]",
+				"USER": "vscode",
+				"SHLVL": "1",
+				"PROMPT_DIRTRIM": "4",
+				"_": "/bin/cat",
+				"REMOTE_CONTAINERS": "true",
+				"BROWSER": "/vscode/vscode-server/bin/linux-x64/863d2581ecda6849923a2118d93a088b0745d9d6/bin/helpers/browser.sh",
+				"VSCODE_CWD": "/vscode/vscode-server/bin/linux-x64/863d2581ecda6849923a2118d93a088b0745d9d6",
+				"ELECTRON_RUN_AS_NODE": "1",
+				"VSCODE_IPC_HOOK_CLI": "/tmp/vscode-ipc-fa17bf85-743b-43c0-bc2d-6c93e6786825.sock",
+				"VSCODE_L10N_BUNDLE_LOCATION": ""
+			},
+			"problemMatcher": [
+				"$rustc"
+			],
+			"group": "build",
+			"label": "rust: run variables"
+		}
+	]
+}
