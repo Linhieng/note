@@ -46,7 +46,7 @@ function dfsReadme(dir) {
  */
 function getOneSidebar(pathPrefix) {
     const sidebar = dfsReadme(pathPrefix)
-    console.log(sidebar);
+
     return sidebar
         .filter(v => !(v.text === 'README.md'))
         .map(v => ({ ...v, collapsed: true }))
