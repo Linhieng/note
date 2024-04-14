@@ -48,7 +48,7 @@ function getOneSidebar(pathPrefix) {
     const sidebar = dfsReadme(pathPrefix)
 
     return sidebar
-        .filter(v => !(v.text === 'README.md'))
+        .filter(v => !(v.text === 'README.md' || v.text === 'README'))
         .map(v => ({ ...v, collapsed: true }))
 }
 function getSideBar() {

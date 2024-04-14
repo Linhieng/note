@@ -36,7 +36,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          # cache: npm 难道开启缓存，需要 lock 文件？
+          # cache: npm 难道开启缓存，需要 lock 文件？没错！
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Install dependencies
