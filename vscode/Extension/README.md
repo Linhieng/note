@@ -11,7 +11,7 @@ ritwickdey.liveserver                 | Live Server                            |
 pkief.material-icon-theme             | Material Icon Theme                    | 文件和文件夹图标
 formulahendry.code-runner             | Code Runner                            | 运行代码
 donjayamanne.githistory               | Git History                            | 查看 Git 历史记录
-
+||
 kisstkondoros.vscode-gutter-preview   | Image preview                          | 图图片预览
 vue.volar                             | Vue Language Features (Volar)          | 开发 Vue
 ms-vscode.cpptools                    | C/C++                                  | 运行 C/C++
