@@ -70,6 +70,7 @@ export default defineConfig({
     themeConfig: {
         nav: getNav(),
         sidebar: getSideBar(),
+        lastUpdated: true,
 
         editLink: {
             text: '在 Github 上查看此页',
