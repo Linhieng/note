@@ -216,7 +216,7 @@ const getNext1 = (pattern) => {
     const next = [0]
     let j = 1
     while (j < pattern.length) {
-      if (pattern[k] === pattern[j]) {
+        if (pattern[k] === pattern[j]) {
             // 相同，则可以直接在前人的基础上 + 1
             next[j] = k + 1
             k++
@@ -230,6 +230,8 @@ const getNext1 = (pattern) => {
             j++
         }
     }
+    // 如果你在这里往头插入一个任意元素，那么 next 数组就变成了
+    // 第二种 next 数组了。
     return next
 }
 ```
