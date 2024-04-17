@@ -21,7 +21,7 @@ function quick_sort(arr, leftIndex, rightIndex) {
     let l = leftIndex - 1
     let r = rightIndex + 1
     while (l < r) {
-        // 这里的 while 为什么不加等号呢？
+        // 这里的 do while 为什么不加等号呢？
         // 因为加了等号会导致 l,r 范围溢出 [leftIndex, rightIndex]
         // 比如为 r 添加等号：arr[r] >= pivot
         // 那么当 arr = [1, 3, 2], pivot 取 1 时，r 最终会等于 -1
@@ -30,8 +30,6 @@ function quick_sort(arr, leftIndex, rightIndex) {
 
         // 并不是说溢出了就不能处理，而是因为我们后面讨论的前提
         // 是 l, r 最终都还是在 [leftIndex, rightIndex] 范围内
-
-        // 同样的，你如果还要问为什么用 do while 不用 while
         do l++; while (arr[l] < pivot);
         do r--; while (arr[r] > pivot);
 
@@ -46,15 +44,15 @@ function quick_sort(arr, leftIndex, rightIndex) {
 
     // 出循环后，此时的 l 和 r 不一定相同，它们还可能是 r+1 === l
     // 原因是每轮循环中，l 和 r 的变化大小是不确定的！
-    // 所以，不要看着 while 条件是 l < r，就以为除了循环后这两个就相等！
+    // 所以，不要看到 while 条件是 l < r，就以为除了循环后这两个就相等！
 
-    // 因为 l 和 r 之间的关系，只可能是
+    // 此时的 l 和 r 之间的关系，只可能是
     //          [      l      ]
     //          [      r      ]
     // 或者
     //          [        l    ]
     //          [      r      ]
-    // 然后，再来考虑边界情况
+    // 现在，来考虑边界情况
     // l 和 r 的范围肯定都是在 [leftIndex, rightIndex] 内的
     // 问题是 l 是否可能等于 leftIndex
     // 而 r 是否可能等于 rightIndex

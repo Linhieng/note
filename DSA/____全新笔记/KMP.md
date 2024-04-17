@@ -172,6 +172,8 @@ const getNext2 = (pattern) => {
             k++
             j++
             // 我们是统一右移了一位，所以这里是在 j++ 后再赋值
+            // 换句话说，我们这里求的 next[j] 的值，其实是
+            // t0...!tj 字符串（不包含 tj）的最长相同前后缀长度
             next[j] = k
         } else {
             // 加快处理。这里有动态规划的思想
@@ -216,7 +218,7 @@ const getNext1 = (pattern) => {
     const next = [0]
     let j = 1
     while (j < pattern.length) {
-      if (pattern[k] === pattern[j]) {
+        if (pattern[k] === pattern[j]) {
             // 相同，则可以直接在前人的基础上 + 1
             next[j] = k + 1
             k++
@@ -230,6 +232,8 @@ const getNext1 = (pattern) => {
             j++
         }
     }
+    // 如果你在这里往头插入一个任意元素，那么 next 数组就变成了
+    // 第二种 next 数组了。
     return next
 }
 ```
