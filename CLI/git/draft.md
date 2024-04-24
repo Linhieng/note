@@ -64,3 +64,27 @@ warning: could not read '.git/rebase-merge/head-name': No such file or directory
 该错误信息并不影响功能就是了。而且该报错信息可能无法复现，因为我在别人电脑上进行同样操作时，发现他们并不会出现这个报错消息。
 
 具体什么原因，我只找到了这个 [issue](https://github.com/electron/electron/issues/35036)
+
+## 遗留的基础知识（等待解决和整理）
+
+```sh
+# git push -u origin main:tmp
+# 这种方式是无法建立追踪关系的，后续继续使用 git push 时也无法成功
+# 会提示：
+fatal: The upstream branch of your current branch does not match
+the name of your current branch.  To push to the upstream branch
+on the remote, use
+
+    git push origin HEAD:tmp
+
+To push to the branch of the same name on the remote, use
+
+    git push origin HEAD
+
+To choose either option permanently, see push.default in 'git help config'.
+
+To avoid automatically configuring an upstream branch when its name
+won't match the local branch, see option 'simple' of branch.autoSetupMerge
+in 'git help config'.
+
+```
