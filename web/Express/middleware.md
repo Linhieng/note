@@ -85,6 +85,7 @@ storage 代表存储在内存中，值为 multer.memoryStorage()
 ### multer 对象上的方法
 
 ```js
+// 自动将文件存入指定目录，但不会有后缀名，文件名称也是随机的。
 const upload = multer({ dest: 'uploads/' })
 app.post('/profile', upload.single('avatar'), function (req, res, next) {
   // req.file 是 `avatar` 文件的信息
