@@ -197,6 +197,15 @@ function get_lnk_target($fullpath) {
 
 ### 硬链接、软连接、快捷方式和普通文件
 
+快速查看：
+
+```powershell
+dir | Format-Table -View childrenWithHardlink
+# 查看当前目录中的问卷类型，如果是 la---，则代表是硬链接
+```
+
+
+
 ```powershell
 New-Item -ItemType SymbolicLink -Path ".\link-a.txt" -Value ".\a.txt"
 New-Item -ItemType SymbolicLink -Target (npm root -g) -Path "$HOME\.node_modules"
