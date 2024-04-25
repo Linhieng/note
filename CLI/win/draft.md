@@ -1,5 +1,16 @@
 # 草稿
 
+
+```powershell
+iwr https://get.pnpm.io/install.ps1 -useb | iex
+
+# iwr: 这是 Invoke-WebRequest 的缩写类似于 curl，用于下载
+# -useb: 这是 Invoke-WebRequest 命令的一个选项，表示以二进制模式进行下载。
+# iex: 这是 Invoke-Expression 的缩写，是 PowerShell 中用于执行字符串作为命令的命令。它会执行管道符号前面的命令的输出。
+```
+
+---
+
 ```powershell
 [System.Security.Principal.NTAccount]::new
 # 可以查看语法
