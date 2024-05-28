@@ -1,5 +1,127 @@
 # nginx 草稿
 
+## 配置案例 3, 两个前端一个后端配置到 https 同一域名
+
+```conf
+http {
+	server {
+		listen 443 ssl;
+		server_name awww.cc;
+		ssl_certificate /.keys/awww.cc.pem;
+		ssl_certificate_key /.keys/awww.cc.key;
+
+		# 末尾 / 不能少
+		root /survey/fill/dist/;
+
+		location /fill/assets/ {
+			alias /survey/fill/dist/assets/;
+			try_files $uri =404;
+		}
+		location /fill/favicon.ico {
+			try_files /favicon.ico =404;
+		}
+		location /fill/ {
+			try_files $uri $uri/ /index.html;
+		}
+
+		location /api/ {
+			proxy_pass http://localhost:3000/api/;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+
+		location / {
+			proxy_pass https://localhost:5173;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+	}
+
+	server {
+		listen 5173 ssl;
+		root /survey/client/dist;
+		ssl_certificate /.keys/awww.cc.pem;
+		ssl_certificate_key /.keys/awww.cc.key;
+
+		location / {
+			try_files $uri $uri/ /index.html;
+		}
+	}
+}
+```
+
+上面配置中，用户通过 https://awww.cc/ 访问到的是端口 5173 搭建的前端问卷系统。
+当用户访问 https://awww.cc/fill/3 时，访问到的是问卷填写页面，这是另外一个前端系统。
+当用户访问 https://awww.cc/api/answer/3 时，访问到的是运行在 3000 端口的后台。
+
+
+上面配置中，我对 5173 和 /api/ 的配置是比较满意的，但是 /fill/ 的配置是不太满意的，
+应该有更加好的处理方案。目前该方案中，我的 fill 项目需要改动 vite 的 base 参数
+还有 vue-router 中的 path 参数。
+
+## 配置案例 2，反向代理 /api/ 后台请求接口
+
+```conf
+  server {
+		listen 443 ssl;
+		server_name awww.cc;
+		ssl_certificate /.keys/awww.cc.pem;
+		ssl_certificate_key /.keys/awww.cc.key;
+
+		location /api/ {
+			proxy_pass http://localhost:3000/api/;
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+			proxy_set_header X-Forwarded-Proto $scheme;
+		}
+	}
+```
+
+上面代码中，主要想说的是反向代理时，会省略到被 location /api/ 识别到的内容。
+如果代码中写的是 `proxy_pass http://localhost:3000/`。
+那么当用户请求 awww.cc/api/answer/3 时，后台只会以为是 awww.cc/answer/3。
+但我们的后台是有 `/api/` 前缀的，所以我们在反向代理时需要手动添加 `/api/`
+
+## 配置案例 1，初步了解 location 和 =404
+
+```conf
+  server {
+		listen 443 ssl;
+		server_name awww.cc;
+		ssl_certificate /.keys/awww.cc.pem;
+		ssl_certificate_key /.keys/awww.cc.key;
+
+		# 末尾 / 不能少
+		root /survey/fill/dist/;
+
+		location /fill/assets/ {
+			alias /survey/fill/dist/assets/;
+			try_files $uri =404;
+		}
+		location /fill/favicon.ico {
+			try_files /favicon.ico =404;
+		}
+		location /fill/ {
+			try_files $uri $uri/ /index.html;
+		}
+	}
+```
+
+上面案例中，当用户访问 awww.cc/fill/assets/xx.js 或其他内容时，
+nginx 会返回对应的 /survey/fill/dist/assets/xx.js 的内容。
+如果对应内容不存在，则返回默认 nginx 404 结果
+
+当用户访问 awww.cc/fill/favicon.ico 时，系统会返回 /survey/fill/dist/favicon.ico 文件。
+如果对应内容不存在，则返回默认 nginx 404 结果
+
+当用户访问 /fill/ 开头的链接（除了上面两种情况）时，系统都会返回
+/survey/fill/dist/index.html 文件。
+
 ## 安装和基本使用
 
 进入 https://nginx.org/en/download.html
