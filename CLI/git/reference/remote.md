@@ -182,4 +182,12 @@ $ git remote rm <name>
 
 $ git remote prune <name>
 # 剔除 <name> 中的无用分支或标签
+
+git remote set-head origin -a
+# 这个命令会自动设置远程仓库 origin 的默认分支。-a（或 --auto）选项告诉 Git 自动检测远程仓库的默认分支。
+# 当我在 Github 上重命名默认分支名时，Github 就会给出下面步骤：
+#       git branch -m main old-main
+#       git fetch origin
+#       git branch -u origin/old-main old-main
+#       git remote set-head origin -a
 ```
