@@ -4,6 +4,17 @@ TODO:
 
 - 等待重构。我发现 git 官网所提供的 [book](https://git-scm.com/book/en/v2) 写的非常好，结构也非常好。所以我打算跟着它的结构进行笔记的整理。
 
+git book 中值得整理的文章内容，实用性较高的内容：
+
+- [第一章：介绍](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control)
+- [第二章：基操](https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository)
+- [第三章：分支](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)
+- [第六章：Github](https://git-scm.com/book/en/v2/GitHub-Account-Setup-and-Configuration)
+- [第七章：工具](https://git-scm.com/book/en/v2/Git-Tools-Revision-Selection) 这里面有很多有用的知识点能帮助我更好的理解 git 的相关命令的使用
+- [第十章：原理](https://git-scm.com/book/en/v2/Git-Internals-Plumbing-and-Porcelain)
+- [附录：嵌入 git](https://git-scm.com/book/en/v2/Appendix-B%3A-Embedding-Git-in-your-Applications-Command-line-Git)
+- [附录：命令](https://git-scm.com/book/en/v2/Appendix-C%3A-Git-Commands-Setup-and-Config)
+
 ## git 常用命令
 
 ```sh
