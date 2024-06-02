@@ -79,7 +79,18 @@ $ git submodule add <git-repo> <folder-name>
 #           git submodule update    然后更新子模块内容
 # 当子模块云端仓库更新时，只需要进入子模块目录，然后 git pull 就可以获取最新的子模块内容了
 
+$ git submodule add -b <branch> <repo-url> <folder-name>
+# 指定指定分支
+
+$ git config -f .gitmodules submodule.<folder-name>.branch <branch>
+# 修改子模块中需要对应的分支
+
 
 $ git submodule init
 $ git submodule update
+
+$ git submodule update --init
+
+$ git submodule update --remote
+# 直接更新所有子模块中的内容到最新提交记录。
 ```
