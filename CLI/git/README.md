@@ -1,5 +1,9 @@
 # git 笔记
 
+TODO:
+
+- 等待重构。我发现 git 官网所提供的 [book](https://git-scm.com/book/en/v2) 写的非常好，结构也非常好。所以我打算跟着它的结构进行笔记的整理。
+
 ## git 常用命令
 
 ```sh
