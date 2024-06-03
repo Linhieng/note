@@ -1,5 +1,36 @@
 # Draft
 
+原本，我配置的 ignore 是这样的：
+
+```ignore
+src/public/*
+```
+
+也就是忽略静态资源文件夹。
+
+但后面，我希望保留 src/public/js/icon-font.js 这个文件，
+于是我自然地添加下面一条规则
+
+```diff
+  src/public/*
++ !src/public/js/icon-font.js
+```
+
+但没有效果。最终发现，想要不忽略这个文件，必须一层一层写，最终的规则应该是这样的：
+
+```ignore
+# 忽略 public 文件夹
+src/public/*
+# 但保留 public/js 文件夹
+!src/public/js/
+# 忽略 public/js 文件夹下的所有文件
+src/public/js/*
+# 但保留 public/js/icon-font.js 文件
+!src/public/js/icon-font.js
+```
+
+---
+
 只忽略不以 `bom-` 开头的 csv 文件正确格式：
 ```ignore
 *.csv
