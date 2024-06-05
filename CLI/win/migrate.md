@@ -144,6 +144,20 @@ Windows 中一些我觉得有用的全局变量，内容提取自 `ls env:`
 | USERDOMAIN              | {HOST_NAME}                            |
 | USERNAME                | {username}                             |
 
+### 通过环境变量配置代理
+
+```powershell
+
+$env:all_proxy="http://127.0.0.1:7890"
+# 配置代理
+
+irm https://deno.land/install.ps1 | iex
+# 下载 deno。
+# irm 是 Invoke-WebRequest 别名
+# iex 是 Invoke-Expression 别名
+
+```
+
 ## 文件和文件夹
 
 - Copy-Item
@@ -435,6 +449,9 @@ $OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding = New-Obj
 ```powershell
 Get-Alias
 # 获取所有别名
+
+Get-Alias irm
+# 查看某个命令的别名，或者查看某个别名的全称
 
 New-Alias -Name "ls" -Value "Get-ChildItem"
 # 为一个命令提供别名。只能是命令，不支持参数。
