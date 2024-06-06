@@ -2,6 +2,32 @@
 
 记录一些每次更新时觉得有趣/有用的功能
 
+## v1_90
+
+- 支持使用 `window.newWindowProfile` 配置新窗口的默认 profile
+- 开发 vscode 扩展，使用 esbuild 作为 bundle。[详见官方案例参考](https://github.com/microsoft/vscode-extension-samples/tree/main/esbuild-sample)。
+
+- 注意，vscode 引入的 `terminal.integrated.suggest.enabled` 功能，目前看来不咋地，可能是因为我本身用的是 powershell 7 吧，pwsh7 本身就提供了代码提示，开启该功能后，启动终端时变慢了，而且输出了一段乱的 json 数据。
+
+## v1_89
+
+
+添加 `markdown.experimental.updateLinksOnPaste` 配置，能够让我们在 vscode 内复制粘贴 markdown 文本时，自动处理相对引用。
+
+下面是一个案例，假设我们有这么一段 md 文本：
+
+```md
+# 测试
+
+1. 请参考 [详见官方案例参考][ref1]。
+2. [读写文件][ref2]
+
+[ref1]: https://github.com/microsoft/vscode-extension-samples/tree/main/esbuild-sample
+[ref2]: https://docs.deno.com/runtime/tutorials/read_write_files
+```
+
+然后，我们只复制了 `1. 请参考 [详见官方案例参考][ref1]` 这一部分。在以前，我们粘贴后，还需要自己处理相对引用，但现在，当我们开启 `markdown.experimental.updateLinksOnPaste` 为 `true` 后，vscode 将会自动帮助我们处理 `ref1` 的相对引用。
+
 ## v1_88
 
 - 新增功能 workbench.editor.customLabels.patterns
