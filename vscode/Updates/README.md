@@ -4,15 +4,15 @@
 
 ## v1_91
 
-- 开启 `workbench.experimental.enableNewProfilesUI` 配置项，可以在单独一个页面中编辑所以 profile。
+- 开启 `workbench.experimental.enableNewProfilesUI` 配置项，可以在单独一个页面中编辑所有 profile。
 
 - 在配置 "custom tabs labels" 时，添加了 `${extname(N)}` 格式用于获取第几个扩展名。
   - 比如一个名为 `about.test.vue` 的文件，
   - 其 `${extname(0)}` 为 `vue`，
-  - 其 `${extname(1)}` 为 `test`
-  - 注意，`${extname(2)}` 不会是 `about`，因为该文件只有两个“扩展名”
+  - 其 `${extname(1)}` 为 `test`，
+  - 注意，`${extname(2)}` 不会是 `about`，因为该文件只有两个“扩展名”。
 
-- 配置 `debug.inlineValues` 为 `on`，当 debug 时就可以始终显示变量的值，无需鼠标 hover。
+- 配置 `debug.inlineValues` 为 `on`，在调试过程中可以始终显示变量的值，无需鼠标 hover。
 
 ## v1_90
 
