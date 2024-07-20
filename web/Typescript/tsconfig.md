@@ -6,6 +6,40 @@
 
 ## compilerOptions
 
+### [module](https://www.typescriptlang.org/tsconfig/#module)
+
+该选项指定了整个项目的模块类型，可以有下面几个值：
+- `AMD`
+- `Commonjs`
+- `ES2015`
+- `ES2020`
+- `ES2022`
+- `ES6` 等同 `ES2015`
+- `ESNext`
+- `Node16`
+- `NodeNext`
+- `None`
+- `Preserve`
+- `System`
+- `UMD`
+
+该值会影响 `moduleResolution` 选项，具体请见[某些选项所隐含的意义](./module.md#某些选项所隐含的意义)
+
+各个值的具体含义，可以参考[模块编译选项](https://www.typescriptlang.org/docs/handbook/modules/reference.html#the-module-compiler-option)
+
+> 值得注意的一点是，当设置 module 值为 `Node16` / `NodeNext`，并且 `package.json` 中含 `"type": "module"` 时，导入的模块不能省略后缀名，必须以 `.js` 结尾。为什么要这样设计，原因可以参考 [issue49083](https://github.com/microsoft/TypeScript/issues/49083#issuecomment-1435399267)。
+
+ESNext 和 NodeNext 有什么区别？当项目运行的环境是 NodeJS 时，`module` 的值应该为 `Node16` / `NodeNext`，而不是 `ESNext` 或其他 ES 开头的值。这算是它们之间的一个区别。
+
+### [moduleResolution](https://www.typescriptlang.org/tsconfig/#moduleResolution)
+
+该选项用于指定模块的解析策略，可选值如下：
+- `Bundler`
+- `Classic`
+- `Node10` / `Node`
+- `Node16`
+- `NodeNext`
+
 ### [isolatedModules](https://www.typescriptlang.org/tsconfig/#isolatedModules)
 
 默认是关闭的，当开启后，某些语法将会报错。下面是一下案例

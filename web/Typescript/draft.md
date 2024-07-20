@@ -236,16 +236,6 @@ const square: Shape = {
 - emitDeclarationOnly
   - 只生成 .d.ts 文件，不生成 js 文件
 
-- module
-  - 指定程序的模块类型（AMD, UMD, CommonJS, ES6, Node16 等等）
-  - 该值会影响 moduleResolution 配置项
-  - 问题：ES6 和 Node16 或 ESNext 和 NodeNext 有啥区别？
-
-- moduleResolution
-  - 指定模块解析策略
-  - 通常只用到 bundler 或者 NodeNext/Node16
-  - 问题：为什么设置为 bundler 时，要求 module 为 ES?
-
 - allowImportingTsExtensions
   - 允许导入时添加 ts 后缀名。
   - 添加后缀名时，可能导致 vscode 扩展调试时无法断点
