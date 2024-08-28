@@ -60,3 +60,81 @@ $ curl https://raw.githubusercontent.com/nuxt/starter/templates/templates/v3.jso
 ## 新知识：View_Transitions_API
 
 [新 API 元素过渡动画](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API)
+
+## 复习：运行 TypeScript 的几种方式
+
+1. 第一种方式：借助 `TypeScript` 包提供的 `tsc` 命令，将 ts 文件编译成 js 文件，然后再通过 node 运行 js 文件。
+
+2. 第二种方式：借助 `ts-node` 包，直接运行 ts 文件。
+
+3. 第三种方式：借助 `deno`，直接运行 ts 文件
+
+4.
+
+
+## 网络：nvm 代理失败
+
+又是网络问题。
+
+```powershell
+# nvm 设置代理
+$ nvm proxy http:127.0.0.1:7890
+
+# 但安装时还是会报错！而且在 clash 中并没有检测到请求，说明请求根本就没有发出去
+# 还是不走代理！
+$ nvm install latest
+# 报错信息如下：
+# Could not retrieve https://nodejs.org/dist/latest/SHASUMS256.txt.
+# Get "https://nodejs.org/dist/latest/SHASUMS256.txt": proxyconnect tcp: dial tcp :80: connectex: No connection could be made because the target machine actively refused it.
+
+
+# 关闭代理，结果也是一样的报错信息，只不过是需要等待十几秒后才报错。
+# 报错信息如下：
+# Could not retrieve https://nodejs.org/dist/latest/SHASUMS256.txt.
+# Get "https://nodejs.org/dist/latest/SHASUMS256.txt": dial tcp 104.20.23.46:443: i/o timeout
+
+尝试使用镜像，而不是代理，结果居然报了 403 错误……
+$ nvm node_mirror https://mirrors.ustc.edu.cn/node/
+$ nvm install latest
+Error retrieving "https://mirrors.ustc.edu.cn/node/latest/SHASUMS256.txt": HTTP Status 403
+
+既然他是想要得到 SHASUMS256.txt 文件的内容，那我自己搭建一个网址给他得了。
+
+$ nvm node_mirror http://localhost:3000/
+$ nvm install latest
+# 测试结果是成功了！但只是这一步成功了，我们又得到了新的报错，信息如下：
+# 22.7.0
+# Error retrieving "http://localhost:3000/index.json": HTTP Status 404
+# 既然如此，那就用最笨的方法，一个一个套。
+
+$ nvm install latest
+# 输出结果如下
+# 22.7.0
+# Downloading node.js version 22.7.0 (64-bit)...
+# Download failed. Rolling Back.
+# C:\Users\k\AppData\Roaming\nvm\v22.7.0\node.zip
+# Rollback failed. remove C:\Users\k\AppData\Roaming\nvm\v22.7.0\node.zip: The process cannot access the file because it is being used by another process.
+# Could not download node.js v22.7.0 64-bit executable.
+# 可以看到，他开始下载了，但这个下载是失败的！
+
+# 于是我开始尝试直接去官方下载安装包，然后再安装。
+# 在看到官方时，我突然意识到一个问题，nvm 本身是不支持 window 的！
+# 也许上面的问题，但我换成 ubuntu 系统后都会解决……
+# 但事情已经进行到这个地步了，肯定不会退，所以尝试继续走下去。
+
+# 首先就是先下载 window 版本的 node，同时查看他的安装地址是如何的。
+# 可以看到，他的地址是 https://nodejs.org/dist/v20.17.0/node-v20.17.0-x64.msi
+# 进入 https://nodejs.org/dist/v20.17.0/
+# 可以看到各类安装包都在这里。
+# 此时，我大概知道 index.json 文明的作用了，他的作用就是查找对应的版本，并选择对应的文件。
+# 根据这两个信息，就可以得到安装包的路径了
+# 由于我在前面的报错信息中看到了 node.zip 所以我猜测 nvm 下载的是 zip 版本的包。
+# 那么我们就拿这个包来测试一下。
+
+# 测试失败了，还是下载失败。
+# 不过最后发现，在 nvm for window 的文档中，已经给出了淘宝的 node 镜像源……
+# https://github.com/coreybutler/nvm-windows?tab=readme-ov-file#usage
+
+nvm node_mirror https://npmmirror.com/mirrors/node/
+# 亏我使用 bing 或谷歌搜索，都搜索不到……
+```
