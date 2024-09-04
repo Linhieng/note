@@ -138,3 +138,26 @@ $ nvm install latest
 nvm node_mirror https://npmmirror.com/mirrors/node/
 # 亏我使用 bing 或谷歌搜索，都搜索不到……
 ```
+
+## win：重装系统时提示“Windows无法安装到这个磁盘”
+
+解决方案参考自[这个链接](https://www.abackup.com/easybackup-tutorials/windows-cannot-be-installed-on-drive-0-partition-1-666.html)
+
+打开命令行，运行下面命令即可：
+
+```sh
+$ diskpart
+# 进入磁盘管理
+
+$ list disk
+# 列出所选磁盘，此时关注磁盘的序号（从 0 开始）
+
+$ select disk <num>
+# 根据磁盘序号选中对应的磁盘
+
+$ clean
+# 清除
+
+$ convert gpt
+# 将磁盘转换为 GPT 格式。
+```
