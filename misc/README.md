@@ -161,3 +161,54 @@ $ clean
 $ convert gpt
 # 将磁盘转换为 GPT 格式。
 ```
+
+## window 中的火狐浏览器在状态栏中的图标变为白纸
+
+网上找了一些方案，学习了几个新的知识点。
+- [图标在任务栏变白板解决方法 - 知乎](https://zhuanlan.zhihu.com/p/437570141)
+
+1. 状态栏的软件所在目录为
+
+    ```
+    %APPDATA%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar
+    ```
+
+2. 无需关机，直接重启文件夹的方式
+  - 使用 cmd
+    ```cmd
+    taskkill /im explorer.exe /f
+    # 停止 explorer
+
+    cd /d %userprofile%\appdata\local
+    del iconcache.db
+    # 卸载图标缓存
+
+    start explorer.exe
+    # 启动 explorer
+    ```
+  - 使用 powershell
+    ```powershell
+    taskkill /im explorer.exe /f
+    # 停止 explorer
+
+    cd $env:USERPROFILE\AppData\Local
+    rm iconcache.db
+    # 卸载图标缓存
+
+    start explorer.exe
+    # 启动 explorer
+    ```
+
+我注意到，上面命令中，一些命令在 cmd 和 powershell 中是通用的，但有些命令则不是。
+比如 `TaskKill` 命令，虽然他在 cmd 和 powershell 中都可以使用，但是在 powershell 中输入 `help TaskKill`
+是找不到相关信息的。而其他命令 `cd`, `del`, `start` 都可以通过 `help <command>` 找到它们在 powershell 中的说明。
+这些命令其实只是 powershell 提供的命令简写。
+
+不过，虽然 `help TaskKill` 没有得到帮助信息，但我们依旧可以使用 `TaskKill /?` 获取帮助信息。
+
+powershell 中清除进程有个类似的命令，叫做 `Stop-Process`，但我感觉它更像是重启：
+
+```powershell
+stop-Process -Name explorer
+# 运行后，相当于重启 explorer
+```
