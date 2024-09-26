@@ -212,3 +212,32 @@ powershell 中清除进程有个类似的命令，叫做 `Stop-Process`，但我
 stop-Process -Name explorer
 # 运行后，相当于重启 explorer
 ```
+
+## windows 晚上定时静音
+
+window 中的免打扰，并没法自动静音，想要实现静音效果，还是得借助任务计划程序。
+
+而这需要借助一个工具 [NirSoft](https://www.nirsoft.net/)，这里面包含了很多有用的 window 工具，
+比如 [SoundVolumeView](https://www.nirsoft.net/utils/sound_volume_view.html) 就是用来控制
+音量的。
+
+首先，先下载 [SoundVolumeView](https://www.nirsoft.net/utils/soundvolumeview-x64.zip)，然后解压
+到特定文件夹。如果想要切换语言，则安装[中文包](https://www.nirsoft.net/utils/trans/soundvolumeview_schinese1.zip)，
+将里面的 ini 文件夹放到 SoundVolumeView.exe 程序的同级目录下即可。
+
+安装完成后，直接执行 SoundVolumeView.exe 即可实现静音功能，下面是案例：
+```sh
+.\SoundVolumeView.exe /Switch "{0.0.0.00000000}.{e34a97c5-617d-4d54-98c5-6b6d97b880c6}"
+# 切换“扬声器”是否静音
+
+.\SoundVolumeView.exe /Mute "{0.0.0.00000000}.{e34a97c5-617d-4d54-98c5-6b6d97b880c6}"
+# 静音
+
+.\SoundVolumeView.exe /Unmute "{0.0.0.00000000}.{e34a97c5-617d-4d54-98c5-6b6d97b880c6}"
+# 解除静音
+```
+
+注意上面我是借助 ID 来指定“扬声器”这个设备的，实际操作时，可以打开软件，选定特定的扬声器，右键复制 Item ID
+即可。
+
+有了这个工具后，直接新建一个计划，让其在特定时间点运行该命令，即可实现定时静音。
