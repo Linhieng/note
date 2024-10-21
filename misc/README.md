@@ -277,3 +277,9 @@ net help user
       },
       "terminal.integrated.defaultProfile.windows": "Git Bash"
   ```
+
+## window 命令 cd
+
+cd 命令在 cmd 和 powershell 是不一样的。
+- 在 cmd 中，切换盘符时，需要添加 `/D` 参数，具体可以输入命令 `help cd`
+- 在 pwsh7 中，则不需要参数，直接运行 `cd d:\` 就可以切换盘符了。
