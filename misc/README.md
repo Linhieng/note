@@ -264,3 +264,16 @@ net user <username> *
 net help user
 # 获取帮助信息
 ```
+
+## 回忆 vscode 配置
+
+- 设置 git 路径: `git.path`
+- 设置默认的终端，详见 [vscode profile 文档](https://code.visualstudio.com/docs/terminal/profiles)
+  ```json
+      "terminal.integrated.profiles.windows": {
+          "Git Bash": {
+              "path": "D:\\soft\\Git\\bin\\bash.exe"
+          }
+      },
+      "terminal.integrated.defaultProfile.windows": "Git Bash"
+  ```
