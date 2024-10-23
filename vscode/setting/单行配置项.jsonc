@@ -1,0 +1,256 @@
+{
+    // 该代理只对 vscode 本身控制的网络有效，比如插件下载和安装。
+    "http.proxy": "http://127.0.0.1:7890",
+
+    // 文件排序方式
+    "explorer.sortOrder": "type",
+    // 让左侧文件夹目录只有单个文件夹时不自动合并为 a/b/c/d/e 形式
+    "explorer.compactFolders": false,
+    // 删除时是否询问
+    "explorer.confirmDelete": true,
+    // 启用 explorer.fileNesting
+    "explorer.fileNesting.enabled": true,
+    // 不自动展开折叠起来的文件
+    "explorer.fileNesting.expand": false,
+
+    // 光标宽度
+    "editor.cursorWidth": 4,
+    // 光标样式
+    "editor.cursorStyle": "line",
+    // 光标闪烁方式
+    "editor.cursorBlinking": "phase",
+    // 移动光标时提供动画过渡效果
+    "editor.cursorSmoothCaretAnimation": "on",
+
+    // 左右无空格时也可以自动配对 [{(
+    "editor.autoClosingBrackets": "always",
+    // 左右无空格时也可以自动配对 '"
+    "editor.autoClosingQuotes": "always",
+    // 通常设置为 never 用于取消自动闭合注释。详见 PR#192335。其 always 和 languageDefined 没什么区别
+    "editor.autoClosingComments": "never",
+    // auto 表示删除引号或括号时，只有当两个符号是相邻且是 vscode 提供的自动插入的符号时，才会自动删除右侧的符号。always 则始终删除两个相邻的符号。
+    "editor.autoClosingDelete": "always",
+    // type over closing quotes 中的 over 是闭合的意思，表示是否键入闭合引号或右括号时
+    "editor.autoClosingOvertype": "always",
+    // 当选中内容时键入，是否将键入内容进行环绕。只能根据语言所定义，没办法自定定义符号是比较可惜的。
+    "editor.autoSurround": "languageDefined",
+
+    // jsDom 属于 word, 关闭后将无法提示 jsDom
+    "editor.suggest.showWords": false,
+    // 预览 suggest
+    "editor.suggest.preview": true,
+    // 插入 suggest 时，将直接替代光标后的内容。
+    "editor.suggest.insertMode": "replace",
+
+    // 按 `Tab` 键时插入空格。该设置在 `editor.detectIndentation` 启用时根据文件内容可能会被覆盖。
+    "editor.insertSpaces": true,
+    // 一个制表符等于的空格数。在 `editor.detectIndentation` 启用时，根据文件内容，该设置可能会被覆盖。
+    "editor.tabSize": 4,
+    // 控制是否在打开文件时，基于文件内容自动检测 `editor.tabSize#` 和 `#editor.insertSpaces`。
+    "editor.detectIndentation": true,
+    // 点击 ; 或者 . 时，不自动补全代码建议。
+    "editor.acceptSuggestionOnCommitCharacter": false,
+    // 粘贴时自动格式化粘贴的内容。要求该文件有配置默认格式化程序，并且该程序支持对某一片段进行格式化。
+    "editor.formatOnPaste": true,
+    // 不支持多行操作，不如 rename tag 插件
+    "editor.linkedEditing": true,
+    // "editor.foldingStrategy": "indentation", // 不建议，函数将变得无法折叠。
+    // 滚动时, 将嵌套的当前范围在顶部粘滞显示. 比如滚动时, 当前所在函数的首行会一直显示在顶部, 如果该函数是嵌套在另外一个函数内的, 则这两个函数都会显示在顶部. 当嵌套的太多, 顶部也会被占用太多行, 此时可以使用 editor.stickyScroll.maxLineCount 指定最大行数.
+    "editor.stickyScroll.enabled": false,
+    // 对于非 ASCII 字符如何显示高亮。 默认是当非 ASCII 符号与 ASCII 符号相连时给出高亮提示。
+    "editor.unicodeHighlight.nonBasicASCII": "inUntrustedWorkspace" /* 默认 */,
+    // 字体大小
+    "editor.fontSize": 18,
+    // 字体行高
+    "editor.lineHeight": 32,
+    // 字体
+    "editor.fontFamily": "Hack, 微软雅黑",
+    // 缩略图是否显示
+    "editor.minimap.enabled": false,
+    // 未选中内容时剪切，将不会剪切当前行
+    "editor.emptySelectionClipboard": false,
+    // 控制在编辑器中是否允许通过拖放来移动选中内容。
+    "editor.dragAndDrop": false,
+    // 始终显示折叠按钮
+    "editor.showFoldingControls": "always",
+    // 关闭无障碍（屏幕阅读器）功能。 在 Window 上使用 “讲述者” 时， vscode 默认为其服务。
+    "editor.accessibilitySupport": "off",
+    // 指定文本分隔符！非常有用:)
+    "editor.wordSeparators": "`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?（），。？！；：、",
+    // 控制如何渲染空格字符
+    "editor.renderWhitespace": "boundary",
+    // 将空格缩进模拟为制表符缩进。在删除和移动时非常方便。
+    "editor.stickyTabStops": true,
+
+    // 文件的创建、重命名、删除操作的超时时间，。单位毫秒
+    // 通常来将，操作时间是很快就可以结束的，超过一定时间则说明文件被锁住了，
+    "files.participants.timeout": 1000,
+    // 不开启自动保存。就算你没保存就关闭了 vscode, vscode 也会自动帮你保存的！
+    "files.autoSave": "off",
+    // 打开文件时自动猜测字符集(编码格式)
+    "files.autoGuessEncoding": true,
+    // 自动重构文件后，是否自动保存 “被重构” 的代码。 如果已经开启不自动保存，则该配置项无用。
+    "files.refactoring.autoSave": false,
+    // 保存时自动添加一行空行, 这个在嵌入式开发中很有用.
+    "files.insertFinalNewline": true,
+    // 保存文件时自动删除行尾空格
+    "files.trimTrailingWhitespace": true,
+    // 删除文件末尾多余空行
+    "files.trimFinalNewlines": true,
+    // 配置文件(夹)对话框的默认路径
+    "files.dialog.defaultPath": "D:\\",
+
+    // 不显示选项卡区域
+    "workbench.editor.showTabs": "none",
+    // 是否在未保存的选项卡上绘制边框
+    "workbench.editor.highlightModifiedTabs": true,
+    // 允许选型卡换行
+    "workbench.editor.wrapTabs": true,
+
+    // 图标主题
+    "workbench.iconTheme": "material-icon-theme",
+
+    // 字体大小
+    "terminal.integrated.fontSize": 16,
+    // 行高
+    "terminal.integrated.lineHeight": 1.5,
+    // 启动时始终隐藏终端
+    "terminal.integrated.hideOnStartup": "always",
+    // 让终端的终止按钮始终在上面。当压缩宽度只能等同 always。
+    "terminal.integrated.tabs.showActions": "always",
+    // 终端滚动动画, 有时候会导致卡顿, 所以还是不开启
+    "terminal.integrated.smoothScrolling": false,
+    // 更改默认终端为 bash. 这个配置项一般和 `terminal.integrated.profiles.windows` 搭配使用, 具体请见 `terminal.integrated.profiles.windows` 部分的说明. 注意: 目前(2022-09-12), 该项生效需要 "terminal.integrated.shell.windows": null, 和 "terminal.integrated.shellArgs.windows": []
+    "terminal.integrated.defaultProfile.windows": "Git Bash",
+
+    // 关闭 "输出" 的 "智能滚动", 这样 "自动滚动" 就不会自己切换了
+    "output.smartScroll.enabled": false,
+
+    // 只在 debug 时往调试控制台输出时，点击展开才有效果
+    "debug.console.wordWrap": false,
+
+    // 自动拉取云端数据
+    "git.autofetch": true,
+    // 设定 autofetch 的周期
+    "git.autofetchPeriod": 180,
+    // 同步(如 push) git 仓库时无需确认
+    "git.confirmSync": false,
+    // 当上级文件夹中存在 git 仓库时，无需提示。
+    "git.openRepositoryInParentFolders": "never",
+    // 智能提交。当没有暂存内容时，自动将未暂存内容添加进暂存区
+    "git.enableSmartCommit": true,
+
+    // 隐藏未变更区域
+    "diffEditor.hideUnchangedRegions.enabled": true,
+
+    // 在新窗口打开新项目
+    "window.openFoldersInNewWindow": "on",
+    // 在新窗口打开新项目时最大化窗口
+    "window.newWindowDimensions": "maximized",
+
+    // 打开扩展时，不显示推荐扩展通知
+    "extensions.ignoreRecommendations": true,
+
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////// 特定语言类型的文件配置
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    // 默认的格式化程序是 clang-format, 这种格式化方式需要书写格式化配置文件. vscode 设置中可设置的格式化程序是 vcFormat
+    "C_Cpp.formatting": "vcFormat",
+    "C_Cpp.vcFormat.newLine.beforeElse": false,
+    // 这个能够解决 "未定义标识符", 但实际上存在该标识符的问题, 但又会导致一些 .h 文件找不到, 而且 "找不到" 并不会报错, 只是警告。
+    "C_Cpp.intelliSenseEngineFallback": "disabled",
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
+
+    // 在 markdown 中粘贴链接文本时自动格式化为文本链接格式
+    "markdown.editor.pasteUrlAsFormattedLink.enabled": "always",
+
+    // 鼠标 hover 在 notebook 的 cell 上时直接显示工具类，不需要聚焦到 cell 上
+    "notebook.cellToolbarVisibility": "hover",
+
+    // 规定属性的换行长度
+    "html.format.wrapLineLength": 120,
+    /*
+        - preserve         只有在属性长度超过规定长度时才会换行对齐。 对齐的参考对象是元素
+        - preserve-aligned 只有在属性长度超过规定长度时才会换行对齐。 对齐的参考对象是第一个属性
+        - force                  除第一个属性外，其他属性全部单独一行，并对齐。 对齐的参考对象是元素
+        - force-aligned          除第一个属性外，其他属性全部单独一行，并对齐。 对齐的参考对象是第一个属性
+        - force-expand-multiline 每个属性单独成行！此时的对齐的参考对象只会是元素
+        - auto             当属性合并成一行不会超出规定长度时，自动合成一行。 当合成一行后超出规定长度时，只对超出部分进行换行对其。对齐的参考对象是元素
+        - aligned-multiple 当属性合并成一行不会超出规定长度时，自动合成一行。 当合成一行后超出规定长度时，只对超出部分进行换行对其。对齐的参考对象是第一个属性
+     */
+    "html.format.wrapAttributes": "preserve-aligned",
+    // 规定属性换行时的缩进量，只有当 html.format.wrapAttributes 属性值不带 aligned 时才有效。
+    "html.format.wrapAttributesIndentSize": 4,
+    // html 格式化时忽略这些标签, 不对其进行格式化
+    "html.format.contentUnformatted": "pre,code,textarea",
+    // html 中的 script 中禁用 JavaScript 验证
+    "html.validate.scripts": false,
+
+    //（vscode原生格式化） 删除不必要的分号
+    "javascript.format.semicolons": "remove",
+    "typescript.format.semicolons": "remove",
+    // 修改文件名时是否重构其他文件中的代码（自动更新导入语句）
+    "javascript.updateImportsOnFileMove.enabled": "prompt",
+    "typescript.updateImportsOnFileMove.enabled": "prompt",
+    // 关闭 js ts 文件的 import 路径建议
+    "javascript.suggest.paths": false,
+    "typescript.suggest.paths": false,
+    // 在 constructor 构造函数之后插入空格，即 constructor () { }
+    "javascript.format.insertSpaceAfterConstructor": true,
+    "typescript.format.insertSpaceAfterConstructor": true,
+    // 在函数名后插入空格，即 function fn () {} 而不是 function fn() {}
+    "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+    "typescript.format.insertSpaceBeforeFunctionParenthesis": true,
+
+    // notebook 运行时自动格式化
+    "notebook.formatOnCellExecution": true,
+
+    // 格式化 json 的时候保留空行
+    "json.format.keepLines": true,
+
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////// 插件
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////
+
+    // 时间格式为相对时间
+    "git-graph.date.format": "Relative",
+    // 图形为拓扑结构，详见 https://git-scm.com/docs/git-log#_commit_ordering
+    "git-graph.repository.commits.order": "topo",
+    // 显示头像
+    "git-graph.repository.commits.fetchAvatars": true,
+    // 将非当前所在提交的祖先提交设置为暗色（mute）
+    "git-graph.repository.commits.mute.commitsThatAreNotAncestorsOfHead": true,
+
+    // 指定预览时选用主题
+    "markdown-preview-enhanced.previewTheme": "medium.css",
+
+    // 运行前自动保存文件
+    "code-runner.saveFileBeforeRun": true,
+
+    // 允许 word 混合。如 autofetch
+    "cSpell.allowCompoundWords": true,
+    // 选用英美词典
+    "cSpell.language": "en-GB,en-US",
+
+    // 缩进宽度
+    "prettier.tabWidth": 4,
+    // 省略分号
+    "prettier.semi": false,
+    // 始终使用单引号
+    "prettier.singleQuote": true,
+    // 对于超出 printWidth 的段落，进行换行处理。设置为 never 时，将用于不会有 prose
+    "prettier.proseWrap": "always"
+}

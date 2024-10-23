@@ -1,0 +1,134 @@
+// 参考 https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/customize-css
+// less playground 网站：http://lesscss.org/less-preview/
+
+.markdown-preview.markdown-preview {
+  .font__special_chinese_punctuation("微软雅黑");
+
+  li,
+  pre[data-info="txt"],
+  p {
+    font-size    : 1.5rem;
+    line-height  : 2.3rem;
+    margin       : 14px 0;
+    word-break   : break-all;
+    overflow-wrap: break-word;
+  }
+
+  li input[type="checkbox"] {
+    width : 15px;
+    height: 15px;
+    margin: 0px 2px;
+
+    &::before {
+      content         : '';
+      background-color: transparent;
+    }
+
+  }
+
+  a {
+    text-decoration: none;
+    color          : skyblue;
+    padding        : 0 2px 4px 2px;
+    box-shadow     : 0 2px 0 0 skyblue;
+
+    &:hover {
+      color     : deepskyblue;
+      box-shadow: 0 2px 0 0 deepskyblue;
+    }
+  }
+
+  code {
+    word-break      : break-all;
+    border-radius   : 2px;
+    overflow-x      : auto;
+    background-color: #fff5f5;
+    color           : #ff502c;
+    font-size       : 1.3rem;
+    padding         : 0 2px;
+    border          : 0.1rem solid lightpink;
+    border-radius   : 0.4rem;
+  }
+
+  pre::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  pre code {
+    word-break      : unset;
+    border          : unset;
+    border-radius   : unset;
+    overflow-x      : unset;
+    background-color: unset;
+    color           : unset;
+    padding         : unset;
+  }
+
+  pre {
+    // 不知为啥，网页端上的默认样式居然设置为 0.85em !important。所以这里只能通过 !important 来覆盖它。
+    font-size: 1.4rem !important;
+  }
+
+  blockquote {
+    padding               : 20px;
+    padding-top           : 10px;
+    border-top-left-radius: 40px;
+    outline               : 1px solid skyblue;
+
+    p:first-child {
+      font-size  : 1.2em;
+      font-weight: bold;
+      color      : skyblue;
+    }
+
+    li,
+    p {
+      font-size  : 1.3rem;
+      line-height: 2.2rem;
+    }
+  }
+
+  h2::before {
+    content: "🍕 ";
+  }
+
+  h3::before {
+    content: "🍕🍕 ";
+  }
+
+  table {
+    min-width: 80%;
+    margin   : 10px auto;
+
+    th,
+    td {
+      text-align : center;
+      line-height: 2rem;
+    }
+  }
+}
+
+
+// 字体设置
+.font__special_chinese_punctuation(@font-chinese, @font-english: "Times New Roman") {
+  @font-face {
+    // 由于 font-english 中常常包含了中文标点符号，从而导致 font-chinese, 的字体无法应用到 中文标点符号。所以特地创建这么一个函数。
+    font-family: "__@{font-chinese}";
+    src        : local(@font-chinese);
+    // ‘’ “” 【】 《》 （） …… —— 、 。 ！ ， ： ； ？
+    unicode-range: U+2018-2019, U+201C-201D, U+3010-3011, U+300A-300B, U+FF08-FF09,
+      U+2026, U+2014, U+3001, U+3002, U+FF01, U+FF0C, U+FF1A, U+FF1B, U+FF1F;
+  }
+
+  li,
+  p,
+  td,
+  th,
+  a,
+  pre[data-info="text"] {
+    font-family: "__@{font-chinese}",
+    @font-english,
+    @font-chinese,
+    serif;
+  }
+}
