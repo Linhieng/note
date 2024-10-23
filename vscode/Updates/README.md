@@ -2,6 +2,23 @@
 
 记录一些每次更新时觉得有趣/有用的功能
 
+## v1_94
+
+没啥值得记录的
+
+## v1_93
+
+没啥值得记录的
+
+## v1_92
+
+- 支持通过链接跳转到 vscode 的设置界面。比如[点击我](vscode-insiders://settings/debug.autoExpandLazyVariables)，就会跳转。
+- `explorer.autoOpenDroppedFile` 配置拖拽文件到 vscode 时是否自动打开文件。
+- `editor.lightbulb.enabled` 设置电灯泡图标的显示位置
+- `debug.showVariableTypes`: debug 时，变量显示那里是否显示变量的类型
+- `debug.showVariableTypes`: 在多个 md 文件之间复制粘贴内容时，是否自动转换含有相对路径的链接。
+- `diffEditor.experimental.useTrueInlineView`: diff 界面中的单行变更，显示为单行而不是两行。
+
 ## v1_91
 
 - 开启 `workbench.experimental.enableNewProfilesUI` 配置项，可以在单独一个页面中编辑所有 profile。
