@@ -283,3 +283,122 @@ net help user
 cd 命令在 cmd 和 powershell 是不一样的。
 - 在 cmd 中，切换盘符时，需要添加 `/D` 参数，具体可以输入命令 `help cd`
 - 在 pwsh7 中，则不需要参数，直接运行 `cd d:\` 就可以切换盘符了。
+
+## pnpm 无法安装 webpack
+
+怀疑是缓存问题，而且是重装系统前的缓存问题。
+因为缓存文件是在 D:\.pnpm-store\v3 中。重装后该文件夹并没有清理。
+
+通过命令 `pnpm store path` 可以获取缓存路径。
+
+下面是报错的完整输出：
+
+```sh
+$ pnpm i -D webpack
+ WARN  GET https://registry.npmmirror.com/@types/estree/-/estree-1.0.6.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@types/json-schema/-/json-schema-7.0.15.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/terser-webpack-plugin/-/terser-webpack-plugin-5.3.10.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds.2 retries left.
+ WARN  GET https://registry.npmmirror.com/acorn/-/acorn-8.14.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz error (ERR_PNPM_EPERM). Will retryin 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/browserslist/-/browserslist-4.24.2.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/events/-/events-3.3.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/tapable/-/tapable-2.2.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/webpack/-/webpack-5.95.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/enhanced-resolve/-/enhanced-resolve-5.17.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retriesleft.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/ast/-/ast-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/acorn-import-attributes/-/acorn-import-attributes-1.9.5.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/watchpack/-/watchpack-2.4.2.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/schema-utils/-/schema-utils-3.3.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/graceful-fs/-/graceful-fs-4.2.11.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@types/estree/-/estree-1.0.6.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/acorn/-/acorn-8.14.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/browserslist/-/browserslist-4.24.2.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/events/-/events-3.3.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/webpack/-/webpack-5.95.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/ast/-/ast-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/acorn-import-attributes/-/acorn-import-attributes-1.9.5.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@types/json-schema/-/json-schema-7.0.15.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left. WARN  GET https://registry.npmmirror.com/terser-webpack-plugin/-/terser-webpack-plugin-5.3.10.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1retries left.
+ WARN  GET https://registry.npmmirror.com/tapable/-/tapable-2.2.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/schema-utils/-/schema-utils-3.3.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/enhanced-resolve/-/enhanced-resolve-5.17.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/watchpack/-/watchpack-2.4.2.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz error (ERR_PNPM_EPERM). Will retryin 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/graceful-fs/-/graceful-fs-4.2.11.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/node-releases/-/node-releases-2.0.18.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/serialize-javascript/-/serialize-javascript-6.0.2.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@xtuc/long/-/long-4.2.2.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.25.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/electron-to-chromium/-/electron-to-chromium-1.5.49.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/ast/-/ast-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/escalade/-/escalade-3.2.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/picocolors/-/picocolors-1.1.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/terser/-/terser-5.36.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/update-browserslist-db/-/update-browserslist-db-1.1.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/caniuse-lite/-/caniuse-lite-1.0.30001675.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@types/node/-/node-22.8.4.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/merge-stream/-/merge-stream-2.0.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/serialize-javascript/-/serialize-javascript-6.0.2.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@xtuc/long/-/long-4.2.2.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/ast/-/ast-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/electron-to-chromium/-/electron-to-chromium-1.5.49.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/escalade/-/escalade-3.2.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@webassemblyjs/wasm-parser/-/wasm-parser-1.12.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/picocolors/-/picocolors-1.1.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/node-releases/-/node-releases-2.0.18.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/terser/-/terser-5.36.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.2.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/update-browserslist-db/-/update-browserslist-db-1.1.1.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/caniuse-lite/-/caniuse-lite-1.0.30001675.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@types/node/-/node-22.8.4.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/merge-stream/-/merge-stream-2.0.0.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.25.tgz error (ERR_PNPM_EPERM). Will retry in 1 minute. 1 retries left.
+ WARN  GET https://registry.npmmirror.com/randombytes/-/randombytes-2.1.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/supports-color/-/supports-color-8.1.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left. WARN  GET https://registry.npmmirror.com/@jridgewell/source-map/-/source-map-0.3.6.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/commander/-/commander-2.20.3.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/source-map-support/-/source-map-support-0.5.21.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/acorn/-/acorn-8.14.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/punycode/-/punycode-2.3.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/undici-types/-/undici-types-6.19.8.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/safe-buffer/-/safe-buffer-5.2.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/has-flag/-/has-flag-4.0.0.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/@jridgewell/gen-mapping/-/gen-mapping-0.3.5.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/buffer-from/-/buffer-from-1.1.2.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+Packages: +76
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ ERR_PNPM_EPERM  Failed to add tarball from "https://registry.npmmirror.com/webpack/-/webpack-5.95.0.tgz" to store: EPERM: operation not permitted, stat 'D:\.pnpm-store\v3\files\e2\bad52e4e244a06f50bd64fcefa7c942febfac5a814c71095106fd3be64634b8381895d4cce884fbe3b2c20043ce210e6322b135b1b9fb2965bd4ae7a57ba8c'
+
+This error happened while installing a direct dependency of D:\github-code\browser-extension\react
+ WARN  GET https://registry.npmmirror.com/source-map/-/source-map-0.6.1.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+ WARN  GET https://registry.npmmirror.com/webpack-sources/-/webpack-sources-3.2.3.tgz error (ERR_PNPM_EPERM). Will retry in 10 seconds. 2 retries left.
+Progress: resolved 77, reused 32, downloaded 0, added 29
+```
+
+解决方案：完整地删除 `D:\.pnpm-store`。
+
+所以，尝试直接修改默认的存储路径，将其改在C盘，这样以后重装系统时更方便。
+
+在官方文档中了解了一下，发现官方并不推荐指定存储路径，[原文](https://pnpm.io/faq#store-path-is-specified)如下：
+
+```md
+## Store path is specified
+If the store path is specified via the store config, then copying occurs between the store and any projects that are on a different disk.
+
+If you run pnpm install on disk A, then the pnpm store must be on disk A. If the pnpm store is located on disk B, then all required packages will be directly copied to the project location instead of being linked. This severely inhibits the storage and performance benefits of pnpm.
+
+## Store path is NOT specified
+If the store path is not set, then multiple stores are created (one per drive or filesystem).
+
+If installation is run on disk A, the store will be created on A .pnpm-store under the filesystem root. If later the installation is run on disk B, an independent store will be created on B at .pnpm-store. The projects would still maintain the benefits of pnpm, but each drive may have redundant packages.
+```
+
+可以看到，一旦指定路径，那么每一次行为都将从指定路径进行复制。而我的原本是想法是缓存包全部放在 C 盘，代码文件则全部放在 D 盘，结果就是完整地踩中了雷区。
+
+如果不指定 store 路径，那么 pnpm 处于性能考虑，将会在每个磁盘都创建一个 `.pnpm-store` 文件夹，这样一来，每个磁盘都将会有冗余，但性能会更好的。为此，我专门到 F 盘（一个空盘）测试了一下，发现果然如此。当我用 pnpm 安装一个包时，pnpm 提示的是 download，并且磁盘中也多了一个 `.pnpm-store` 文件夹。
+
+所以，还是不要指定路径了，虽然磁盘之间的传输很快，但我们的包文件都是碎文件，文件数量庞大，单纯的速度快并没有什么用。这有点类似于 CPU 和 GPU 的感觉。
