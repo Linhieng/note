@@ -402,3 +402,50 @@ If installation is run on disk A, the store will be created on A .pnpm-store und
 如果不指定 store 路径，那么 pnpm 处于性能考虑，将会在每个磁盘都创建一个 `.pnpm-store` 文件夹，这样一来，每个磁盘都将会有冗余，但性能会更好的。为此，我专门到 F 盘（一个空盘）测试了一下，发现果然如此。当我用 pnpm 安装一个包时，pnpm 提示的是 download，并且磁盘中也多了一个 `.pnpm-store` 文件夹。
 
 所以，还是不要指定路径了，虽然磁盘之间的传输很快，但我们的包文件都是碎文件，文件数量庞大，单纯的速度快并没有什么用。这有点类似于 CPU 和 GPU 的感觉。
+
+## 使用 PaddleOCR 将 PDF 转 word
+
+1. 配置环境，参考[运行环境 - PaddleOCR 文档](https://paddlepaddle.github.io/PaddleOCR/latest/ppocr/environment.html#11-windows)
+2. 打开 `Anaconda Prompt`，运行 `conda activate paddle_env` 使用刚刚创建的环境
+3. 配置 pip 源，有两种方式
+  - 临时指定 `pip install <package> -i https://pypi.tuna.tsinghua.edu.cn/simple`
+  - 永久指定 `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple` 该方式其实就是往 pip 的配置文件中写入一行配置
+4. 安装 PaddlePaddle `pip install paddlepaddle`
+5. 安装 paddleocr `pip install paddleocr`
+6. 运行 `paddleocr --image_dir ./xxx.pdf --use_angle_cls true --use_gpu false --page_num 2`
+
+期间出现报错信息：
+```
+ImportError: Failed importing fitz. This likely means that some paddle modules require additional dependencies that have to be manually installed (usually with `pip install fitz`).
+```
+
+尝试安装 `pip install fitz` 无效，但在 [Unable to use fitz with python 3.8 · Issue #523 · pymupdf/PyMuPDF](https://github.com/pymupdf/PyMuPDF/issues/523) 找到解决方案。
+最终安装 `pip install pymupdf` 就可以了。
+
+结果发现，这只是一个底层工具，还无法之间导出 word。
+
+再次找到 [PaddleOCR/ppstructure/pdf2word at main · PaddlePaddle/PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR/tree/main/ppstructure/pdf2word)
+
+将该项目拷贝到本地运行。
+```sh
+git clone https://github.com/PaddlePaddle/PaddleOCR.git
+```
+然后打开 `Anaconda Prompt`，运行
+```sh
+conda activate paddle_env
+cd D:\github-clone\PaddleOCR-main\ppstructure\pdf2word
+pip install pdf2docx
+pip install qtpy
+python pdf2word.py
+```
+
+提示报错：
+```
+qtpy.QtBindingsNotFoundError: No Qt bindings could be found
+```
+参考 [qtpy.PythonQtError: No Qt bindings could be found · Issue #3545 · spyder-ide/spyder](https://github.com/spyder-ide/spyder/issues/3545) 的解决方案，重新安装 `pip install pyqt5`
+
+继续运行 `python pdf2word.py`，成功出现界面，打开 PDF 文件试了一下，效果并不好，几乎全是图片，没有文字。
+而我的本意是将视频中的文字截图输出为图片，然后再通过 OCR 转化为文字。结果他还是给我文字。不过试了一下其他 PDF 文件，还是有点效果的。
+
+或许我的需求应该是批量图片转文字，但这个好像没有现成的 demo。
