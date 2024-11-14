@@ -449,3 +449,93 @@ qtpy.QtBindingsNotFoundError: No Qt bindings could be found
 而我的本意是将视频中的文字截图输出为图片，然后再通过 OCR 转化为文字。结果他还是给我文字。不过试了一下其他 PDF 文件，还是有点效果的。
 
 或许我的需求应该是批量图片转文字，但这个好像没有现成的 demo。
+
+## node 导入 json，使用 with 而不是 assert
+
+参考自
+- [the new keyword is with instead of assert](https://stackoverflow.com/a/70106896)
+- [tc39/proposal-json-modules: Proposal to import JSON files as modules](https://github.com/tc39/proposal-json-modules?tab=readme-ov-file#synopsis)
+
+## word 使用 VBA 批量处理图片居中，还有首行无缩进格式。
+
+直接贴上代码，然后一行一行解释。
+
+```vba
+; 定义一个子程序，理解为函数即可
+Sub ResizeImages()
+    ; 声明一个变量 i，数据类型是 Long
+    Dim i As Long
+
+    ; With 语句用于引用 ActiveDocument 对象，这样在接下来的代码块中就不需要重复引用这个对象。
+    ; 所谓引用，也就是不需要一直写 ActiveDocument. 这个前缀
+    ; ActiveDocument 是当前活动（即打开且正在操作的）Word文档。
+    With ActiveDocument
+        ; 不用说了吧，一看就知道是 for 循环
+        ; 重点是 .InlineShapes.Count
+        ; 首先，我们这里是在 with 里面，所以省略了 ActiveDocument. 这个前缀
+        ; 直接写成 .InlineShapes 就可以了。.InlineShapes 指的是内联形状，也就是图片
+        ; .Count 指的就是总数
+        For i = 1 To .InlineShapes.Count
+            ; 同理，使用 with 引用 .InlineShapes(i) 后面就不需要重复写了
+            With .InlineShapes(i)
+                ; 在 with 里面，相当于是对每一张图片执行一个操作
+
+                ; 下面三行也可以直接赋值为 0
+                .Range.ParagraphFormat.FirstLineIndent = CentimetersToPoints(0)
+                .Range.ParagraphFormat.LeftIndent = CentimetersToPoints(0)
+                .Range.ParagraphFormat.RightIndent = CentimetersToPoints(0)
+
+                .Range.ParagraphFormat.OutlineLevel = wdOutlineLevelBodyText
+                .Range.ParagraphFormat.Alignment = wdAlignParagraphCenter
+
+            End With
+        ; 让我们的 i++
+        Next i
+    End With
+
+    ; 一个弹出框。
+    MsgBox "所有图片已居中。", vbInformation
+End Sub
+
+```
+
+解释一下上面设置格式的几行代码，基本就懂了。
+
+- `.Range` 指当前内联形状（我们这里是图片）所包含的文本区域
+- `.ParagraphFormat` 指的是设置段落格式
+- `.FirstLineIndent` 设置首行缩进
+  - `CentimetersToPoints(0)` 表示将 0 厘米转换为点。同理还有 `InchesToPoints()` 方法
+    - point（点）是 Word 中的一个常见长度单位，比如字体大小是 12、16，这些数值的单位默认就是 point
+- `LeftIndent` 设置段落左缩进
+- `RightIndent` 设置段落右缩进
+- `OutlineLevel` 设置大纲级别
+  - `wdOutlineLevel1` 表示 1 级。
+  - `wdOutlineLevelBodyText` 表示正文
+- `Alignment` 设置对齐方式
+  - `wdAlignParagraphCenter` 表示居中
+
+更多具体的格式和相关说明都可以在文档中找到，比如
+- [ParagraphFormat.FirstLineIndent property (Word) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/word.paragraphformat.firstlineindent)
+- [ParagraphFormat.OutlineLevel property (Word) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/word.paragraphformat.outlinelevel)
+- [ParagraphFormat.LineSpacingRule property (Word) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/word.paragraphformat.linespacingrule)
+- [Range object (Word) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/word.range)
+
+顺便说一下，文档中的第一段说明最后的  'Read/write WdOutlineLevel' / 'Read/write Single' / 'Read/write WdLineSpacing' 指的是该属性的值的类型。比如
+- WdOutlineLevel 大纲级别
+- Single 单一的浮点数值
+- WdLineSpacing 行距值
+
+想要设置格式，可以通过录制宏，然后查看宏代码的方式自己找到对应的属性，接着再查查文档之类的就可以。
+比如我想要设置行距，通过录制宏，阅读代码，自己调试后，就可以知道行距受 `LineSpacingRule` 和 `LineSpacing` 控制，这两个值刚好对应可视化操作中的两个空。
+
+然后找到 ``LineSpacingRule`` 对应的[文档](https://learn.microsoft.com/en-us/office/vba/api/word.paragraphformat.linespacingrule)，得知它的值类型为 `WdLineSpacing`，再查看 `WdLineSpacing` 类型，得知这是一个枚举类型：
+
+- `LineSpacingRule` 可选值有
+  - `wdLineSpaceSingle` 单倍行距
+  - `wdLineSpace1pt5` 1.5 倍行距
+  - `wdLineSpaceDouble` 2 倍行距
+  - `wdLineSpaceAtLeast` 最小值
+  - `wdLineSpaceExactly` 固定值
+  - `wdLineSpaceMultiple` 多倍行距
+
+当行距设置为最小值/固定值/多倍行距时，我们就需要再设置 `LineSpacing` 数值了。
