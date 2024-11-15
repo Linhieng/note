@@ -670,6 +670,7 @@ contextBridge.exposeInMainWorld('a_api', {
     },
     readFile: async () => {
         // 接收主进程中的数据，这里也可以在后面传参给主进程
+        // 注意这里的文件只写了文件名，默认会在项目根目录下生成。
         const text = await ipcRenderer.invoke('readFile', 'test.txt')
         return text
     }
