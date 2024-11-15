@@ -539,3 +539,346 @@ End Sub
   - `wdLineSpaceMultiple` 多倍行距
 
 当行距设置为最小值/固定值/多倍行距时，我们就需要再设置 `LineSpacing` 数值了。
+
+## 复习: ESM 获取 __dirname
+
+```js
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+```
+
+## Electron 通信以及打包
+
+前面一些简单的一步带过，详见[官网](https://www.electronjs.org/zh/docs/latest/tutorial/quick-start)
+
+```sh
+mkdir my-electron-app && cd my-electron-app
+npm init -y
+# 注意 package.json 中的 author 和 description 必填，不然打包失败
+# 添加 "scripts": { "start": "electron ." }，然后运行
+# 创建 main.js 文件
+npm start
+# 成功运行
+```
+
+简单理解一下 Electron 的框架逻辑。核心就是三层：
+- 主进程，也就是 package.json 中指定的 main 文件。主进程的环境是 node 环境
+- 预加载，通常命名为 preload.js。预加载，是用于沟通主进程和渲染进程的，具备一部分 node 和浏览器的功能
+- 渲染进程，也就是我们的前端文件了。可以使用基础三件套，也可以使用 vue/react 框架。
+
+### 入门 demo
+
+下面的入门 demo，简单练习了一下主进程、预加载脚本和渲染进程之间的数据传递。
+简单来说，主要学习的就是主进程和预加载脚本中的新 API，至于渲染进程，基本和前端一样。
+
+后续如果有多个窗口想要通信，他们之间也可以借助主进程来进行通信的。
+
+#### `package.json`
+```json
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Linhieng",
+  "license": "ISC",
+  "description": "This is a application",
+  "devDependencies": {
+    "electron": "^33.2.0"
+  }
+}
+```
+
+#### `main.js`
+```js
+const { app, BrowserWindow, ipcMain } = require('electron/main')
+const path = require('node:path')
+const fs = require('node:fs')
+
+const createWindow = () => {
+    // 创建一个窗口
+    const win = new BrowserWindow({
+        width: 800,
+        height: 600,
+        webPreferences: {
+            // 指定我们的预加载文件
+            preload: path.join(__dirname, 'preload.js')
+        }
+    })
+    // 监听预加载脚本中的信道（类似于事件）
+    ipcMain.on('writeFile', (_, text) => fs.writeFileSync('test.txt', text, 'utf8'))
+    // handle，用于向预加载脚本传递数据。
+    ipcMain.handle('readFile', (_, filename) => fs.readFileSync(filename, 'utf8'))
+
+    // 往这个窗口中加载我们的前端页面。也可以调用 .loadUrl 直接加载一个网页
+    win.loadFile('pages/index.html')
+}
+
+
+
+
+// 下面是固定写法，不用在意
+
+app.on('ready', () => {
+    createWindow()
+    // 这里是用来适应 Mac 的，因为 Mac 创建所有窗口后程序并不会退出，而是会留一个图标。
+    // 点点击图标时就是所谓的 activate，此时会判断一下是否有窗口，没有则新建
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow()
+        }
+    })
+})
+
+// 当所有窗口都关闭了，而且不是 Mac 时，就结束该程序。
+app.on('window-all-closed', () => {
+    if (process.platform !== 'darwin') {
+        app.quit()
+    }
+})
+```
+
+#### `preload.js`
+
+```js
+const {contextBridge, ipcRenderer} = require('electron')
+
+// 既能访问一部分浏览器
+window.addEventListener('DOMContentLoaded', () => {
+    const replaceText = (element, text) => {
+        if (element) element.innerText = text
+    }
+
+    for (const dependency of ['chrome', 'node', 'electron']) {
+        // 也能访问一部分 node
+        const version = process.versions[dependency]
+        replaceText(document.getElementById(`${dependency}-version`), version)
+    }
+})
+
+// 向渲染器传递消息，第二个参数将会添加在 window 对象上
+contextBridge.exposeInMainWorld('a_api', {
+    writeFile: (text) => {
+        // 向主进程传递数据，类似于事件模型一样进行通信
+        ipcRenderer.send('writeFile', text)
+    },
+    readFile: async () => {
+        // 接收主进程中的数据，这里也可以在后面传参给主进程
+        const text = await ipcRenderer.invoke('readFile', 'test.txt')
+        return text
+    }
+})
+```
+
+#### `pages/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <title>ELectron 应用入门 demo</title>
+    <meta charset='UTF-8'>
+    <!-- 配置 CSP，详见 https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'" />
+
+    <script src="./render.js" defer></script>
+</head>
+
+<body>
+    <h1>Hello World!</h1>
+    We are using Node.js <span id="node-version"></span>,
+    Chromium <span id="chrome-version"></span>,
+    and Electron <span id="electron-version"></span>.
+    <br>
+
+    <div>
+        <input id="text1" type="text">
+        <button id="write-btn">写入文件内容</button>
+    </div>
+    <hr>
+    <div>
+        <input id="text2" type="text" disabled>
+        <button id="read-btn">读取文件内容</button>
+    </div>
+</body>
+
+</html>
+```
+
+
+#### `pages/render.js`
+
+```js
+const myApi = a_api
+
+const text1 = document.getElementById('text1')
+const btn1 = document.getElementById('write-btn')
+btn1.onclick = () => {
+    myApi.writeFile(text1.value)
+}
+
+const text2 = document.getElementById('text2')
+const btn2 = document.getElementById('read-btn')
+btn2.onclick = async () => {
+    text2.value = await myApi.readFile()
+}
+```
+
+### 打包
+
+记得之前自己跟着官方文档走时，最后就卡死在打包这一步。这一次跟着视频走，虽然也有很多问题，但至少是完成打包了！
+
+这次采用的打包方式是 [`electron-builder`](https://github.com/electron-userland/electron-builder)
+
+步骤如下：
+
+1. 先安装 `npm i -D electron-builder`
+
+2. 修改 package.json，添加 build 脚本和 build 子项
+
+    ```json
+    {
+      "scripts": {
+        "build": "electron-builder"
+      },
+      "build": {
+        "appId": "com.linhieng.demo",
+        "win": {
+          "icon": "./logo.ico",
+          "target": [
+            {
+              "target": "nsis",
+              "arch": [
+                "x64"
+              ]
+            }
+          ]
+        },
+        "nsis": {
+          "oneClick": false,
+          "perMachine": true,
+          "allowToChangeInstallationDirectory": true
+        }
+      },
+    }
+    ```
+
+3. 运行 `npm run build`
+
+正常来说这就成功了，但我还是遇到了两个问题。
+
+#### 代理问题
+
+第一个问题是网络问题，虽然我开了全局代理，但还是一直卡住。最终采用的是在终端上配置代理的方式解决。
+
+```sh
+# 使用的是 powershell7
+$env:HTTP_PROXY = "http://127.0.0.1:7890"
+npm run build
+```
+
+配置代理后，就可以看到有 downloading 了。
+
+#### 权限问题
+
+网络没问题后，安装时还是报错，命令行输出类似下面这样
+
+```sh
+$ npm run build
+
+> electron@1.0.0 build
+> electron-builder
+
+  • electron-builder  version=25.1.8 os=10.0.19045
+  • loaded configuration  file=package.json ("build" field)
+  • writing effective config  file=dist\builder-effective-config.yaml
+  • executing @electron/rebuild  electronVersion=33.2.0 arch=x64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=33.2.0 appOutDir=dist\win-unpacked
+  • updating asar integrity executable resource  executablePath=dist\win-unpacked\electron.exe
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=1.921s
+  ⨯ cannot execute  cause=exit status 2
+                    out=
+    7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+
+    Scanning the drive for archives:
+    1 file, 5635384 bytes (5504 KiB)
+
+    Extracting archive: C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\754197667.7z
+    --
+    Path = C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\754197667.7z
+    Type = 7z
+    Physical Size = 5635384
+    Headers Size = 1492
+    Method = LZMA2:24m LZMA:20 BCJ2
+    Solid = +
+    Blocks = 2
+
+
+    Sub items Errors: 2
+
+    Archives with Errors: 1
+
+    Sub items Errors: 2
+
+                    errorOut=ERROR: Cannot create symbolic link : �ͻ���û����������Ȩ�� : C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\754197667\darwin\10.12\lib\libcrypto.dylib
+    ERROR: Cannot create symbolic link : �ͻ���û����������Ȩ�� : C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\754197667\darwin\10.12\lib\libssl.dylib
+
+                    command='D:\draft\electron\node_modules\7zip-bin\win\x64\7za.exe' x -snld -bd 'C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\754197667.7z' '-oC:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\754197667'
+                    workingDir=C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign
+  • Above command failed, retrying 3 more times
+  • downloading     url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z size=5.6 MB parts=1
+  • downloaded      url=https://github.com/electron-userland/electron-builder-binaries/releases/download/winCodeSign-2.6.0/winCodeSign-2.6.0.7z duration=1.73s
+  ⨯ cannot execute  cause=exit status 2
+                    out=
+    7-Zip (a) 21.07 (x64) : Copyright (c) 1999-2021 Igor Pavlov : 2021-12-26
+
+    Scanning the drive for archives:
+    1 file, 5635384 bytes (5504 KiB)
+
+    Extracting archive: C:\Users\k\AppData\Local\electron-builder\Cache\winCodeSign\293568827.7z
+    --
+```
+
+最终发现是权限问题，需要在管理员模式下运行才可以。
+
+本来我以为打包都需要管理员权限，但当我看到生成的安装包也需要管理员权限时，我就意识到有问题了。
+因为我这个应用并不需要管理员权限！
+
+#### signing 警告
+
+只要不是错误，都不用管。这一项只是用于提示罢了，具体可以看 [#8559](https://github.com/electron-userland/electron-builder/issues/8559)
+
+#### 管理员权限问题
+
+神奇了，当我用管理员运行，打包成功后，我在普通终端也可以成功打包了（删除掉重新打包也可以，所以应该不是缓存之类的）
+
+但问题在于，生成的程序还是有管理员的图标，安装的路径也在默认在 `C:\Program Files` 里面。
+
+查了文档，发现是 `build.win.requestedExecutionLevel` 控制的权限，但我并没有配置该项，默认应该是 `asInvoker` 呀。
+
+将它显式改为 `asInvoker` 后，还是没效果。
+
+再试一下把 `build.nsis` 删掉，结果就可以了！
+
+再将其改回去，居然没法复现前面出现的问题了！
+
+不过倒是知道了当
+- `build.nsis.oneClick` 为 false
+- `build.nsis.perMachine` 为 true
+时，打包的程序默认需要管理员权限运行。
+
+但是“终端需要以管理员权限运行”这个问题复现不出来了。可能之前是缓存啥的锅吧。不过也算是学习了一些其他属性。比如：
+
+- `build.win.requestedExecutionLevel` 设置为 `highestAvailable` 时可以让应用程序安装在 `C:\Program Files` 里面。该配置项可以配置哪些值具体可以查看[微软文档](https://learn.microsoft.com/zh-cn/previous-versions/visualstudio/visual-studio-2015/deployment/trustinfo-element-clickonce-application?view=vs-2015&redirectedfrom=MSDN#requestedexecutionlevel)
+- `build.nsis.selectPerMachineByDefault` 设置为 true，可以不让用户选择“为此用户”还是“为所有用户”安装
