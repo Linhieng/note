@@ -265,17 +265,17 @@ net help user
 # 获取帮助信息
 ```
 
-## 回忆 vscode 配置
+## 复习 vscode 配置默认终端
 
 - 设置 git 路径: `git.path`
 - 设置默认的终端，详见 [vscode profile 文档](https://code.visualstudio.com/docs/terminal/profiles)
-  ```json
-      "terminal.integrated.profiles.windows": {
-          "Git Bash": {
-              "path": "D:\\soft\\Git\\bin\\bash.exe"
-          }
-      },
-      "terminal.integrated.defaultProfile.windows": "Git Bash"
+    ```json
+    "terminal.integrated.profiles.windows": {
+      "Git Bash": {
+        "path": "D:\\soft\\Git\\bin\\bash.exe"
+      }
+    },
+    "terminal.integrated.defaultProfile.windows": "Git Bash"
   ```
 
 ## window 命令 cd
@@ -883,3 +883,24 @@ $ npm run build
 
 - `build.win.requestedExecutionLevel` 设置为 `highestAvailable` 时可以让应用程序安装在 `C:\Program Files` 里面。该配置项可以配置哪些值具体可以查看[微软文档](https://learn.microsoft.com/zh-cn/previous-versions/visualstudio/visual-studio-2015/deployment/trustinfo-element-clickonce-application?view=vs-2015&redirectedfrom=MSDN#requestedexecutionlevel)
 - `build.nsis.selectPerMachineByDefault` 设置为 true，可以不让用户选择“为此用户”还是“为所有用户”安装
+## `import()` 方法中的路径和直接使用 `import` 的路径用法一致
+
+本想着通过编程遍历所有 json 文件的绝对路径，然后通过 `import(url, {with: {type:'json'}})` 导入，结果没想到使用绝对路径导入时会报错。
+```js
+node:internal/modules/esm/load:209
+    throw new ERR_UNSUPPORTED_ESM_URL_SCHEME(parsed, schemes);
+
+Error [ERR_UNSUPPORTED_ESM_URL_SCHEME]: Only URLs with a scheme in: file, data, and node are supported by the default ESM loader. On Windows, absolute paths must be valid file:// URLs. Received protocol 'd:'
+```
+
+## 复习：ESM 中获取 `__dirname`
+
+```js
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+console.log(__dirname)
+```
