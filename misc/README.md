@@ -904,3 +904,30 @@ const __dirname = dirname(__filename);
 
 console.log(__dirname)
 ```
+
+## 在 word 中使用 vba 为指定命令分配快捷键
+
+需求是这样的，最近的 word 按下快捷键 ctrl+f 后，一直打开的是导航栏中的搜索框，而不是弹出框中的搜索框。
+百度一番后发现为 `EditFind` 命令分配 ctrl+f 快捷键就可以解决问题。但通过界面操作的过程太过麻烦，而我最近又学了点 vba，
+于是决定采用 vba 的方式来解决。
+
+下面的 vba 代码同样是借助录制宏的方式获取，具体的命令解释是让 AI 帮忙解释，并让其给出对应的参考链接。
+
+```vba
+Sub 指定快捷键()
+    ; 这行代码设置了宏的定制上下文为“Normal.dotm”模板，这是Word默认的模板，包含了所有的样式和宏。
+    ; 这意味着后面所指定的快捷键将对所有基于该模板的文档生效，比如新建的文档。
+    CustomizationContext = NormalTemplate
+
+    ; BuildKeyCode函数来构建一个键码，代表快捷键组合，这里我们分配的是 ctrl+f 按键
+    ; Command:="EditFind" 指定了当按下快捷键时应该执行的Word命令
+    KeyBindings.Add KeyCode:=BuildKeyCode(wdKeyControl, wdKeyF), KeyCategory:= _
+        wdKeyCategoryCommand, Command:="EditFind"
+End Sub
+```
+
+参考：
+- [新版Word如何将导航栏改为查找命令-百度经验](https://jingyan.baidu.com/article/6181c3e05228d7552ef15399.html)
+- [BuildKeyCode Method - Microsoft Word Visual Basic Documentation](https://documentation.help/VBAWD10/womthBuildKeyCode.htm)
+- [Application.BuildKeyCode 方法 (Word) | Microsoft Learn](https://learn.microsoft.com/zh-cn/office/vba/api/word.application.buildkeycode)
+- [Application.BuildKeyCode method (Word) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/word.application.buildkeycode)
