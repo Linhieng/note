@@ -931,3 +931,34 @@ End Sub
 - [BuildKeyCode Method - Microsoft Word Visual Basic Documentation](https://documentation.help/VBAWD10/womthBuildKeyCode.htm)
 - [Application.BuildKeyCode 方法 (Word) | Microsoft Learn](https://learn.microsoft.com/zh-cn/office/vba/api/word.application.buildkeycode)
 - [Application.BuildKeyCode method (Word) | Microsoft Learn](https://learn.microsoft.com/en-us/office/vba/api/word.application.buildkeycode)
+
+## PE 无法安装 win11
+
+不知什么原因，下载 win11 的 iso 后，在 PE 中安装运行时会出现空白，安装不了。
+
+最终只能采用 U 盘的方式安装。
+
+## 安装 win 11 时提示必须连接网络
+
+解决方案是：
+1. 按下 `shift+f10` 调出终端
+2. 运行 `oobe\bypassnro` 命令（其实就是 `C:\Windows\System32\oobe\BypassNRO.cmd`）
+3. 重启后重新执行操作，就出现“我没有网络”这一选项了
+
+- [安装系统时没有网络无法完成设置进入系统 - Microsoft Community](https://answers.microsoft.com/zh-hans/windows/forum/all/%E5%AE%89%E8%A3%85%E7%B3%BB%E7%BB%9F%E6%97%B6/972194a6-4a7d-44e5-bbc3-a870a1fc09ea)
+
+## 激活 Windows
+
+激活 window 直接有开源项目了。
+
+以管理员权限运行 powershell7
+```sh
+$env:http_proxy="http://127.0.0.1:7890"
+# 配置代理，不然访问不了
+irm https://get.activated.win | iex
+# 进入激活菜单，然后根据提示激活就可以了
+```
+
+参考
+- [massgravel/Microsoft-Activation-Scripts: Open-source Windows and Office activator featuring HWID, Ohook, KMS38, and Online KMS activation methods, along with advanced troubleshooting.](https://github.com/massgravel/Microsoft-Activation-Scripts)
+- [Win10/Win11系统永久激活教程（免费、无需密钥、支持离线激活）](https://www.hangge.com/blog/cache/detail_3543.html)
