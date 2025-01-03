@@ -1029,3 +1029,40 @@ If (Test-Path "C:\Users\k\anaconda3\Scripts\conda.exe") {
 - 集成后打开 pwsh 会很慢，可以使用 `conda init --reverse` 撤销集成
 
 - [python - The term 'conda' is not recognized as the name of a cmdlet - Stack Overflow](https://stackoverflow.com/questions/56314710/the-term-conda-is-not-recognized-as-the-name-of-a-cmdlet)
+
+## 使用 python 爬取动态页面
+
+借助 Selenium 模块，可以模拟浏览器操作，实现动态页面的爬取。
+
+直接上代码：
+```python
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+
+# 初始化浏览器
+driver = webdriver.Chrome()
+# 打开网页
+driver.get("https://book.sina.com.cn/excerpt/")
+# 等待页面加载
+driver.implicitly_wait(3)
+print() # 打印空行分割一下
+
+# 获取网页源代码或某个元素的内容
+title = driver.title
+print(title + '\n')
+
+# 通过 css 选择器进行查找
+lists  = driver.find_elements(By.CSS_SELECTOR, '#J_BookRankList > li')
+
+for item in lists:
+    a = item.find_element(By.CSS_SELECTOR, '.rank-name')
+    print(a.text)
+
+# 关闭浏览器
+driver.quit()
+```
+
+有了案例后基本就能干活了，再给几个参考链接：
+- [定位策略 | Selenium](https://www.selenium.dev/zh-cn/documentation/webdriver/elements/locators/)
+- [查询网络元素 | Selenium](https://www.selenium.dev/zh-cn/documentation/webdriver/elements/finders/)
+- [selenium.webdriver.remote.webelement — Selenium 4.25.0 documentation](https://www.selenium.dev/selenium/docs/api/py/webdriver_remote/selenium.webdriver.remote.webelement.html#selenium.webdriver.remote.webelement.WebElement)
