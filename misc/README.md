@@ -956,9 +956,76 @@ End Sub
 $env:http_proxy="http://127.0.0.1:7890"
 # 配置代理，不然访问不了
 irm https://get.activated.win | iex
-# 进入激活菜单，然后根据提示激活就可以了
+# 进入激活菜单，然后根据提示激活就可以了（通常选择第一个选项 HWID 即可）
 ```
 
 参考
 - [massgravel/Microsoft-Activation-Scripts: Open-source Windows and Office activator featuring HWID, Ohook, KMS38, and Online KMS activation methods, along with advanced troubleshooting.](https://github.com/massgravel/Microsoft-Activation-Scripts)
 - [Win10/Win11系统永久激活教程（免费、无需密钥、支持离线激活）](https://www.hangge.com/blog/cache/detail_3543.html)
+
+## pdf2png 时报错 ImageData is not defined
+
+解决方式：在 node 环境中使用 pdf.js，要导入 legacy 版本！
+
+我这个问题的复现方式，就是导入时没有导入 legacy，可以参考[这里的代码](https://github.com/mozilla/pdf.js/blob/master/examples/node/pdf2png/pdf2png.mjs)
+
+## pdf2png 无法显示签名盖章、丢失颜色等信息
+
+[解决pdf.js预览pdf不显示签名问题(两条路)_pdf.js 不展示签章,注释掉pdf.worker.js代码依旧无效-CSDN博客](https://blog.csdn.net/s_y_w123/article/details/108869862)
+
+## pdf.js 依赖本地打包后的库
+
+```json
+"dependencies": {
+  "pdfjs-dist": "file:build/dist"
+}
+```
+表示项目依赖于一个名为pdfjs-dist的包，而这个依赖不是从npm注册表中获取的，而是指向一个本地路径。
+
+这样的配置通常用于以下几种情况：
+- 当你在开发一个包或库，并且想要在本地测试它，而不是发布到npm后再通过npm安装。
+- 当你需要一个特定的版本或者修改过的库，而这些改变尚未发布到npm。
+- 当你想要避免将某些大型的或者私有的代码上传到npm，而是直接在项目中引用。
+
+使用这种方式的依赖，在执行 `npm install` 时，npm 会创建一个符号链接从 `node_modules/pdfjs-dist` 指向 `build/dist` 目录，而不是从 npm 仓库下载这个包。
+
+## conda 命令找不到
+
+想要使用 conda 命令，和普通的命令不一样，简单地添加环境变量是没有效果的。
+需要在 conda 中运行 `conda init powershell`。
+但这样后，打开 pwsh 时会很慢。
+
+```sh
+conda info --envs
+# 查看当前环境变量配置
+
+conda init -d
+# 查看运行 conda init 命令后会影响的配置。
+# 结果显示下面这一条
+# modified      HKEY_CURRENT_USER\Software\Microsoft\Command Processor\AutoRun
+# 查询发现这个键值对配置的是“每次打开命令提示符时运行的脚本”
+# 不过我当时运行的是 conda init powershell 所以应该输入
+conda init powershell -d
+# 结果发现修改的是
+# modified      C:\Users\k\Documents\WindowsPowerShell\profile.ps1
+# modified      C:\Users\k\Documents\PowerShell\profile.ps1
+```
+
+查看内容后发现，conda 自动添加了下面代码
+
+```sh
+#region conda initialize
+# !! Contents within this block are managed by 'conda init' !!
+If (Test-Path "C:\Users\k\anaconda3\Scripts\conda.exe") {
+    (& "C:\Users\k\anaconda3\Scripts\conda.exe" "shell.powershell" "hook") | Out-String | ?{$_} | Invoke-Expression
+}
+#endregion
+```
+
+到现在，我就找到了我所需要的所有信息了。
+
+- 单纯的添加环境变量并没法集成 conda 命令到 powershell 环境
+- 使用 `conda init powershell` 可以集成 conda 到 pwsh 后
+- 集成后打开 pwsh 会很慢，可以使用 `conda init --reverse` 撤销集成
+
+- [python - The term 'conda' is not recognized as the name of a cmdlet - Stack Overflow](https://stackoverflow.com/questions/56314710/the-term-conda-is-not-recognized-as-the-name-of-a-cmdlet)
