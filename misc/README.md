@@ -1066,3 +1066,179 @@ driver.quit()
 - [定位策略 | Selenium](https://www.selenium.dev/zh-cn/documentation/webdriver/elements/locators/)
 - [查询网络元素 | Selenium](https://www.selenium.dev/zh-cn/documentation/webdriver/elements/finders/)
 - [selenium.webdriver.remote.webelement — Selenium 4.25.0 documentation](https://www.selenium.dev/selenium/docs/api/py/webdriver_remote/selenium.webdriver.remote.webelement.html#selenium.webdriver.remote.webelement.WebElement)
+
+## python 实现 win 弹框通知
+
+```python
+from plyer import notification
+notification.notify(
+    title="标题",
+    message="内容，有长度限制",
+    timeout=15
+)
+```
+
+plyer 不局限于 win，而 win10toast 专门适用于 win，win10toast-click 用于获取点击事件。
+
+```python
+# modules
+import webbrowser
+from win10toast_click import ToastNotifier
+
+ToastNotifier().show_toast(
+    "Example two",
+    "Click to open URL! >>", # message
+    callback_on_click=lambda: webbrowser.open_new('http://example.com/')
+)
+```
+
+- [vardecab/win10toast-click: An easy-to-use Python library for displaying Windows 10 Toast Notifications. Improved version of win10toast and win10toast-persist to include `callback_on_click` to run a function on notification click, for example to open a URL.](https://github.com/vardecab/win10toast-click)
+- [jithurjacob/Windows-10-Toast-Notifications: Python library to display Windows 10 Toast Notifications](https://github.com/jithurjacob/Windows-10-Toast-Notifications)
+- [kivy/plyer: Plyer is a platform-independent Python wrapper for platform-dependent APIs](https://github.com/kivy/plyer)
+- [Plyer 2.2.0.dev0 documentation](https://plyer.readthedocs.io/en/latest/index.html)
+
+## python 实现 pdf2png
+
+使用 python 实现太简单了，需要安装两个模块：
+- `pip install pdf2image`
+- [poppler-windows](https://github.com/oschwartz10612/poppler-windows/releases)
+
+然后解压 poppler-windows 到一个指定位置，最后运行下面代码即可。
+
+```py
+from pdf2image import convert_from_path
+
+images = convert_from_path('a.pdf', poppler_path = r'C:\soft\zip\poppler-24.08.0\Library\bin')
+
+for i in range(len(images)):
+    images[i].save('page'+ str(i) +'.jpg', 'JPEG')
+
+```
+
+[Convert PDF to Image using Python - GeeksforGeeks](https://www.geeksforgeeks.org/convert-pdf-to-image-using-python/)
+
+## pyinstaller 打包 python 文件为 exe 文件
+
+很简单，直接运行
+
+```sh
+pyinstaller --onefile -w d.py
+```
+
+其中 `-w` 参数是让其运行时不显示终端控制台。
+
+[【Python教程】保姆版教使用Pyinstaller 打包python成exe文件-CSDN博客](https://blog.csdn.net/flyskymood/article/details/123668136)
+
+## pyinstaller 打开报错
+
+报错信息如下：
+```
+The 'pathlib' package is an obsolete backport of a standard library package and is incompatible with PyInstaller. Please remove this package (located in C:\Users\k\anaconda3\envs\my_test\lib\site-packages) using
+    conda remove
+then try again.
+```
+
+解决方案是运行 `pip uninstall pathlib`。网络上很多帖子都采用 `conda remove pathlib`，但这个对我来说没效果
+
+[使用pyinstaller踩的坑 - 㝽守靳 - 博客园](https://www.cnblogs.com/ssj-Secret-base/p/17880690.html)
+
+## python 使用注释器简化代码
+
+```py
+class Test:
+    class EmptyInputError(Exception):
+        def __init__(self, message="输入为空，请重新输入。"):
+            self.message = message
+            super().__init__(self.message)
+
+    def fn(self):
+        return input("请输入一个值: ")
+
+    def get_input(self):
+        a = self.fn()
+        if a == '':
+            raise self.EmptyInputError()
+        return a
+
+    # 定义异常处理装饰器
+    def handle_exceptions(func):
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Test.EmptyInputError as e:
+                print(f"发生错误: {e.message}")
+        return wrapper
+
+    # 有了这个注解后，我就不需要专门处理报错了，统一在一个函数中处理即可
+    @handle_exceptions
+    def add(self):
+        x = self.get_input()
+        print(x)
+
+
+
+if __name__ == "__main__":
+    test = Test()
+    test.add()
+```
+
+
+最简单的异常类
+
+```py
+class MyCustomError(Exception):
+    pass
+
+def some_function():
+    raise MyCustomError("这是一个自定义异常信息")
+
+try:
+    some_function()
+except MyCustomError as e:
+    print(f"捕获到自定义异常: {e}")
+```
+
+## python 解包
+
+```py
+a = (12,4)
+print([1, 2, *a, 4])
+```
+
+## pyinstaller 打包减小体积
+
+总的来说，就是新建一个虚拟环境，然后在这个环境里面打包。
+
+[【已解决】pyinstaller打包瘦身，变小 exe 的通用和终极解决方案！_pyinstaller打包文件太大怎么办-CSDN博客](https://blog.csdn.net/JiuShu110/article/details/132625538)
+
+## node 包安装失败
+
+```sh
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: getaddrinfo ENOENT raw.githubusercontent.com
+    at GetAddrInfoReqWrap.onlookupall [as oncomplete] (node:dns:120:26) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'getaddrinfo',
+  hostname: 'raw.githubusercontent.com'
+}
+```
+
+老问题，dns 解析错误，配置 npm 的镜像和代理都不好使，最终还是采取老方法。
+到 `https://githubhosts.xuanyuan.me/` 复制内容到 hosts 文件，然后重新运行。
+
+
+## python 开发应用程序时，某段代码执行时间过长导致“程序不响应”
+
+使用线程解决
+
+```py
+import threading
+
+def task():
+    # 直接把那段代码缩进，放到 task 函数中。
+threading.Thread(target=task).start()
+```
