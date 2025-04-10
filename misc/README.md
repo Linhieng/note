@@ -1242,3 +1242,15 @@ def task():
     # 直接把那段代码缩进，放到 task 函数中。
 threading.Thread(target=task).start()
 ```
+
+## pyinstaller 打包时报错 ValueError: Invalid async_mode specified
+
+解决方案，打包命令换成：
+
+```sh
+pyinstaller --onefile --hidden-import="gevent" --hidden-import="geventwebsocket" --hidden-import="gevent.ssl" --hidden-import="gevent.builtins" --hidden-import="engineio.async_drivers.threading" --add-data "web;web" --add-data "server;server"  main.py
+```
+
+其中的 --hidden-import 用于解决 ValueError: Invalid async_mode specified 的依赖问题，根本原因是 gevent 和 engineio.async_drivers.threading 等关键模块是 Flask-SocketIO ​运行时动态加载的，PyInstaller 默认不会打包它们。
+
+--add-data 用于解决网页找不到问题。
