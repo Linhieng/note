@@ -1254,3 +1254,82 @@ pyinstaller --onefile --hidden-import="gevent" --hidden-import="geventwebsocket"
 其中的 --hidden-import 用于解决 ValueError: Invalid async_mode specified 的依赖问题，根本原因是 gevent 和 engineio.async_drivers.threading 等关键模块是 Flask-SocketIO ​运行时动态加载的，PyInstaller 默认不会打包它们。
 
 --add-data 用于解决网页找不到问题。
+
+## Flask 网页不会自动更新内容
+
+关键原因在于 ​静态文件服务方式 的差异
+
+🔍 核心差异分析
+
+项目A（不自动更新）：
+```python
+app = Flask(__name__,
+           template_folder='../web/templates',
+           static_folder='../web/static')
+```
+- 使用了 Flask **内置模板系统**
+- 受 `TEMPLATES_AUTO_RELOAD` 和 `DEBUG` 配置影响
+- 默认启用模板缓存
+
+项目B（自动更新）：
+```python
+@app.route('/')
+def index():
+    return send_from_directory(static_dir, 'index.html')
+```
+- 直接通过 `send_from_directory` 发送原始文件
+- 完全绕过 Flask 模板系统
+- 文件每次请求都会重新读取
+
+📌 关键机制对比
+
+| 特性                | 使用 `render_template`                | 使用 `send_from_directory`          |
+|---------------------|---------------------------------------|--------------------------------------|
+| **文件读取时机**     | 启动时加载+缓存                       | 每次请求实时读取                     |
+| **缓存控制**         | 受 Flask/Jinja2 配置控制               | 受操作系统文件系统影响               |
+| **适合场景**         | 需要模板渲染（变量/继承）              | 纯静态文件服务                       |
+| **开发时热更新**     | 需要配置 `TEMPLATES_AUTO_RELOAD=True` | 天然支持                             |
+| **性能**             | 高（缓存优化）                        | 低（每次磁盘IO）                     |
+
+## python 执行命令
+
+一般使用 subprocess 模块中的两个命令：
+- `run` 简单，阻塞（同步执行命令，等待命令执行完毕）
+- `Popen` 复杂，非阻塞（新建进程执行命令，需要考虑进程的退出状态）
+
+run 示例：
+```py
+import subprocess
+
+# 启动进程并实时读取输出
+result = subprocess.run(
+    ["ping", "qq.com"],
+    stdout=subprocess.PIPE,
+    text=True
+)
+
+print(result.stdout)
+
+print("程序结束")
+```
+
+`Popen` 示例：
+```py
+import subprocess
+
+# 启动进程并实时读取输出
+proc = subprocess.Popen(
+    ["ping", "qq.com"],
+    stdout=subprocess.PIPE,
+    text=True
+)
+
+for line in proc.stdout:  # 逐行读取输出
+    print(line.strip())
+# proc.communicate()
+print("程序结束")
+```
+
+查看上面两个示例，可以看到，`run` 命令只有在程序结束后才能获取到输出，而 `Popen` 命令则能实时获取到输出。
+如果 `Popen` 也想要等待程序结束后才获取输出，则需要使用 `communicate` 方法。
+因此，对于超时参数，`run` 是直接设置在 `run` 方法中，而 `Popen` 则是在 `communicate` 方法来设置超时参数。
