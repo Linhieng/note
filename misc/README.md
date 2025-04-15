@@ -1321,11 +1321,14 @@ import subprocess
 proc = subprocess.Popen(
     ["ping", "qq.com"],
     stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    encoding="utf-8",
     text=True
 )
 
 for line in proc.stdout:  # 逐行读取输出
-    print(line.strip())
+    # 注意要添加 flush=True 才可能实时看到输出
+    print("输出：", line.strip(), flush=True)
 # proc.communicate()
 print("程序结束")
 ```
@@ -1333,3 +1336,5 @@ print("程序结束")
 查看上面两个示例，可以看到，`run` 命令只有在程序结束后才能获取到输出，而 `Popen` 命令则能实时获取到输出。
 如果 `Popen` 也想要等待程序结束后才获取输出，则需要使用 `communicate` 方法。
 因此，对于超时参数，`run` 是直接设置在 `run` 方法中，而 `Popen` 则是在 `communicate` 方法来设置超时参数。
+
+注意，在使用 Popen 时，我配置了 `stderr=subprocess.STDOUT` 和 `encoding="utf-8"`，这是因为实际使用时，其他应用程序的 debug 输出不一定是标准输出，而是错误输出。此外，当程序输出中文时，需要指定编码，否则会出现乱码。
