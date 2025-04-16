@@ -1338,3 +1338,65 @@ print("程序结束")
 因此，对于超时参数，`run` 是直接设置在 `run` 方法中，而 `Popen` 则是在 `communicate` 方法来设置超时参数。
 
 注意，在使用 Popen 时，我配置了 `stderr=subprocess.STDOUT` 和 `encoding="utf-8"`，这是因为实际使用时，其他应用程序的 debug 输出不一定是标准输出，而是错误输出。此外，当程序输出中文时，需要指定编码，否则会出现乱码。
+
+## python 的 check_output 函数
+
+该函数专注于获取命令的输出，如果命令报错，则会抛出异常 CalledProcessError。
+
+下面是示例代码
+```py
+import subprocess
+import os
+from PIL import Image
+from io import BytesIO
+
+pdf_path = "a.pdf"
+poppler_bin_path = "C:\\soft\\zip\\poppler-24.08.0\\Library\\bin"
+command = [
+    os.path.join(poppler_bin_path, 'pdftoppm'),
+    "-progress",
+    "-png",
+    "-f", "1", "-l", "1",
+    pdf_path,
+]
+
+# 启动进程并实时读取输出
+png_data  = subprocess.check_output(
+    command,
+)
+
+image = Image.open(BytesIO(png_data))  # 直接转为 PIL 对象
+image.save("xx.png")
+print("程序结束")
+```
+
+上面示例代码中添加了 `-progress` 的目的在于，可以清晰的了解到，stderr 和异常 CalledProcessError 并不一样。
+程序可以在正常运行过程中将一些信息输出到 stderr，对于 check_output ，如果想要获取 stderr 的数据，是没有意义的。
+stderr 参数可以设置为下面几个值：
+|        参数值        |           行为           |     典型用途     |
+| :------------------: | :----------------------: | :--------------: |
+|  `subprocess.PIPE`   |        捕获到变量        | 单独处理错误日志 |
+| `subprocess.STDOUT`  |     合并到 `stdout`      |    统一输出流    |
+| `subprocess.DEVNULL` |         丢弃错误         |  忽略非关键错误  |
+|      `文件对象`      |       重定向到文件       |  持久化错误记录  |
+|    `None`（默认）    | 继承父进程（打印到终端） |     实时调试     |
+check_output 函数中，如何将 stderr 设置为 PIPE，那么还是没有办法获取到该管道，因为 check_output 直接返回 stdout 的内容。
+而不像 run/Popen 函数一样，返回一个对象（该对象包含了 stdout 和 stderr 的内容）。而如何设置为 stderr=STDOUT，那么将无法
+区分哪些是正常输出，哪些是错误输出，没有意义，而且对于上面示例代码中的获取 byte 的情况，还会导致保存图片异常。
+
+## python 的 threading 调用函数时传递参数
+
+虽然有 args 和 kwargs 两种传递参数的方式，但推荐使用 lambda 或 functools.partial 包装函数。
+
+```py
+# 使用 lambda
+t = threading.Thread(
+    target=lambda: worker("线程4", 4)
+)
+
+# 使用 functools.partial
+from functools import partial
+t = threading.Thread(
+    target=partial(worker, name="线程5", count=1)
+)
+```
