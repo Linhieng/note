@@ -95,6 +95,14 @@ pdftk A=1.pdf B=2.pdf cat A1 B1down A2 B2 output merged.pdf
 - 顾名思义，提取 `A1 B1down A2 B2` 然后合并为一份文档，其中 `B1` 被翻转
 - 前面的 `shuffle A B` 就相当于 `cat A1 B1 A2 B2 A3 B3 ....`
 
+## 案例：合并多个 PDF 文件
+
+新建一个文件夹，把 PDF 文件放在里面，然后执行下面代码。注意，需要文件名有序。
+
+```sh
+pdftk *.pdf cat output merged.pdf
+```
+
 ## python 环境工具
 
 ### img2pdf
