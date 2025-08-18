@@ -117,3 +117,9 @@ img2pdf --pagesize A4 -o output.pdf *.png
 - `images/*.jpg` 支持通配符，指定图片路径。也可以指定图片顺序，图片路径写在最后，用空格分隔
 - `-o output.pdf` 指定输出文件名
 - `--pagesize A4` 添加该参数将自适应页面大小为 A4
+
+### PDF 转 word
+
+```sh
+pdf2docx convert input.pdf output.docx
+```
