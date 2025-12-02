@@ -40,6 +40,14 @@ pdftoppm -png -r 300 -singlefile input.pdf output
 - 旋转PDF
 - 合并PDF
 
+### 案例：打印文件合并
+
+```sh
+pdftk B=2.pdf cat end-1 output 22.pdf
+
+pdftk A=1.pdf B=22.pdf shuffle A B output merged.pdf
+```
+
 ### 案例：所有页面旋转 180°
 
 ```sh
