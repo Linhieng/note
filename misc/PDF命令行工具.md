@@ -1,3 +1,68 @@
+## [PDFtk Server](https://www.pdflabs.com/tools/pdftk-server/)
+
+- 拆分 / 合并
+用 cat 选择想要的页面，可以对页面进行旋转。然后用 output 将选中的页面输出
+```sh
+pdftk 文件1 文件2 文件3 cat output 输出文件名.pdf
+pdftk *.pdf cat output 全部合并.pdf
+# 合并多个文件
+
+pdftk 文件 burst output test\名称_%03d.pdf
+# 拆分成单页面，%03d 表示用三位数序号
+
+pdftk 文件1 cat [odd|even] output 结果.pdf
+# 提取奇数/偶数页
+
+pdftk A=文件1 B=文件2 cat A1-5 B1-endSouth output 结果.pdf
+# 提取A文件1-5页，提取B文件所有（旋转180）
+
+pdftk 文件 cat end-1 output 结果.pdf
+# 倒序
+
+pdftk A=odd.pdf B=even.pdf shuffle A Bend-1 output 修正顺序.pdf
+# 交叉合并成一份。
+# 无法双面扫描的机子，通常第二份是倒序。
+```
+
+- 旋转
+```sh
+pdftk 输入文件.pdf cat [页面范围][旋转参数] output 输出文件.pdf
+# 基础语法
+pdftk input.pdf cat 1right output rotated.pdf
+# 单页旋转
+pdftk input.pdf cat 1-endRight output all_rotated.pdf
+# 多页旋转
+pdftk input.pdf cat 1 2south 3left output mix_rotated.pdf
+# 多页不同旋转：1不转，2转180，3逆转90
+
+# north 不旋转
+# south / down 旋转 180°
+# east / right 顺时针旋转 90°
+# west / left 逆时针旋转 90°
+```
+
+- 加密
+```sh
+pdftk 输入文件.pdf output 加密文件.pdf user_pw 打开密码
+pdftk 输入文件.pdf output 加密文件.pdf owner_pw 权限密码 allow <权限列表>
+# 基础语法
+
+pdftk input.pdf output encrypted.pdf user_pw 123
+# 设置打开密码 123
+pdftk input.pdf output encrypted.pdf owner_pw 12
+# 可以打开，但权限需要密码 12。
+pdftk input.pdf output encrypted.pdf owner_pw 12 Allow CopyContents
+# 可以打开复制内容，其他权限需密码 12
+```
+
+- 解压
+```sh
+pdftk 输入文件.pdf output 输出文件.pdf [compress | uncompress]
+# uncompress：把 PDF 里被压缩的页面流（比如文本、图片的原始数据）解压成明文 / 可读格式，
+# 方便用文本编辑器修改底层 PDF 代码。
+# compress：把解压后的页面流重新压缩回去，恢复成标准 PDF 的压缩格式。
+```
+
 ## [poppler-windows](https://github.com/oschwartz10612/poppler-windows/releases)
 
 ### 作用
@@ -33,83 +98,6 @@ pdftoppm -png -r 300 -singlefile input.pdf output
 
 - `-singlefile`：添加了该参数后，只转换首页，而且输出文件名不会添加序号后缀。
 
-## [PDFtk Server](https://www.pdflabs.com/tools/pdftk-server/)
-
-### 作用
-
-- 旋转PDF
-- 合并PDF
-
-### 案例：打印文件合并
-
-```sh
-pdftk B=2.pdf cat end-1 output 22.pdf
-
-pdftk A=1.pdf B=22.pdf shuffle A B output merged.pdf
-```
-
-### 案例：所有页面旋转 180°
-
-```sh
-pdftk input.pdf cat 1-endsouth output rotated.pdf
-```
--   `1-end`：表示所有页面（第1页到最后一页）。
--   `south`：表示旋转 180°。
--   注意 end 和 south 之间没有空格
-
-
-**PDFtk 旋转参数对照表**
-
-| **旋转角度**              | **可用关键字**    | **示例命令**                                        |
-| ------------------------- | ---------------- | --------------------------------------------------- |
-| **90° 顺时针**           | `east` / `right` | `pdftk a.pdf cat 1-endeast output rotated_90.pdf`   |
-| **180°**              | `south` / `down` | `pdftk a.pdf cat 1-endsouth output upside_down.pdf` |
-| **90° 逆时针** | `west` / `left`  | `pdftk a.pdf cat 1-endwest output rotated_270.pdf`
-
-### 案例：只旋转第4-6页
-
-```sh
-pdftk input.pdf cat 1-3 4-6left 7-end output rotated.pdf
-```
-
-- 注意数字和方向之间没有空格。
-
-
-### 案例：将页面倒序，并翻转
-
-```sh
-pdftk input.pdf cat end-1down output rotated-reversed.pdf
-```
-
-- 核心就是 `cat end-1down`
-
-
-### 案例：合并扫描件的单双页
-
-```sh
-pdftk A=1.pdf B=2.pdf shuffle A B output merged.pdf
-```
-
-- `1.pdf` 是奇数页，`2.pdf` 是偶数页，merged.pdf 是这两份PDF按序合并后的结果
-- `shuffle` 作用是交替合并多个 PDF 文件页面
-
-
-### 案例：合并指定内容，并翻转特定页
-
-```sh
-pdftk A=1.pdf B=2.pdf cat A1 B1down A2 B2 output merged.pdf
-```
-
-- 顾名思义，提取 `A1 B1down A2 B2` 然后合并为一份文档，其中 `B1` 被翻转
-- 前面的 `shuffle A B` 就相当于 `cat A1 B1 A2 B2 A3 B3 ....`
-
-### 案例：合并多个 PDF 文件
-
-新建一个文件夹，把 PDF 文件放在里面，然后执行下面代码。注意，需要文件名有序。
-
-```sh
-pdftk *.pdf cat output merged.pdf
-```
 
 ## python 环境工具
 
