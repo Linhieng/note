@@ -1,6 +1,6 @@
 ## [PDFtk Server](https://www.pdflabs.com/tools/pdftk-server/)
 
-- 拆分 / 合并
+### 拆分 / 合并
 用 cat 选择想要的页面，可以对页面进行旋转。然后用 output 将选中的页面输出
 ```sh
 pdftk 文件1 文件2 文件3 cat output 输出文件名.pdf
@@ -24,7 +24,7 @@ pdftk A=odd.pdf B=even.pdf shuffle A Bend-1 output 修正顺序.pdf
 # 无法双面扫描的机子，通常第二份是倒序。
 ```
 
-- 旋转
+### 旋转
 ```sh
 pdftk 输入文件.pdf cat [页面范围][旋转参数] output 输出文件.pdf
 # 基础语法
@@ -41,7 +41,7 @@ pdftk input.pdf cat 1 2south 3left output mix_rotated.pdf
 # west / left 逆时针旋转 90°
 ```
 
-- 加密
+### 加密
 ```sh
 pdftk 输入文件.pdf output 加密文件.pdf user_pw 打开密码
 pdftk 输入文件.pdf output 加密文件.pdf owner_pw 权限密码 allow <权限列表>
@@ -55,7 +55,7 @@ pdftk input.pdf output encrypted.pdf owner_pw 12 Allow CopyContents
 # 可以打开复制内容，其他权限需密码 12
 ```
 
-- 解压
+### 解压
 ```sh
 pdftk 输入文件.pdf output 输出文件.pdf [compress | uncompress]
 # uncompress：把 PDF 里被压缩的页面流（比如文本、图片的原始数据）解压成明文 / 可读格式，
@@ -114,8 +114,10 @@ img2pdf --pagesize A4 -o output.pdf *.png
 - `-o output.pdf` 指定输出文件名
 - `--pagesize A4` 添加该参数将自适应页面大小为 A4
 
-### PDF 转 word
+### pdf2docx
 
 ```sh
+pip install
+
 pdf2docx convert input.pdf output.docx
 ```
