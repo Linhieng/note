@@ -10,7 +10,10 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn
 
 pip config list
-# 查看配置
+# 查看配置，具体文件通常在 C:\Users\k\AppData\Roaming\pip\ 中的 pip.conf 或 pip.ini
+
+pip config unset global.index-url
+# 取消设置清华源
 ```
 
 ### conda 镜像源
@@ -57,15 +60,16 @@ conda env list
 conda info --envs
 # 两种方式查看所有环境
 
-conda create -n py39 python=3.9 numpy requests
+conda create -n k python=3.12 numpy requests
 # 创建虚拟环境，-n 指定名称，后面带预装包
 # 必须指定Python版本，不然会使用默认环境中的Python版本，这样包环境就错乱了
+# 如果只创建了虚拟环境，忘记安装python，可以手动安装 conda install python=3.12
 conda list python
 # 查看当前环境下的 Python 版本
 where pip
 # 查看 pip 所在位置
 
-conda activate py39
+conda activate k
 # 激活虚拟环境
 
 conda deactivate
