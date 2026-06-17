@@ -2,6 +2,34 @@
 
 用于Window下用于读取、写入、编辑海量不同格式文件内的元数据。
 
+
+
+## ImageMagick
+
+图像处理工具
+- 压缩图片
+- 图片格式转换
+- 图片编辑
+
+理解图片压缩前，需要理解一下jpg和png两个格式的区别。
+- png采用RGB色彩通道，三原色是平等的，这属于一种无损图，所谓的压缩只影响大小，不影响质量。
+- jpg是有损图，它将RGB换算成了一个亮度分量+两个色彩差值分量，即三分量（YCbCr，Y:亮度，Cb:蓝色差分量，Cr:红色差分量）。
+  - 之所以采用这种方式是因为人眼视杆细胞（感知明暗）数量远超视锥细胞（感知色彩），对亮度细节极度敏感，对色彩细节很迟钝，因此 JPG 可以完整保留亮度，大胆删减色彩数据实现瘦身。
+  - Y（Luma 亮度分量）指不是屏幕亮度的那种亮度，而是有一套计算公式 Y = 0.299R + 0.587G + 0.114B（绿色对明暗贡献最大）；
+  - 图像全部轮廓、文字、纹理、边缘都存在 Y 里，如果用 Y 压缩过大，整张图会发虚、文字糊块、包浆。
+  - Cb+Cr 合称 Chroma 色度（色彩），只负责颜色，不承载任何画面轮廓细节。
+
+```sh
+magick 1.jpg -sampling-factor 4:2:0 2.jpg
+# 压缩图片，只压缩色彩，文档扫描通常将 4:4:4 压缩到 4:2:0
+magick 1.jpg -quality 90 -sampling-factor 4:2:0 2.jpg
+# 压缩亮度和色彩，压缩强度更大
+
+magick 1.jpg 1.pdf
+# 可以做图片转 PDF，但不推进，因为 magick 并不是直接将图片封装PDF，而是解码重绘，文件大小会变大。
+```
+
+
 ## [PDFtk Server](https://www.pdflabs.com/tools/pdftk-server/)
 
 ### 拆分 / 合并
@@ -85,7 +113,7 @@ pdftk 输入文件.pdf output 输出文件.pdf [compress | uncompress]
 ### pdfimages
 
 ```sh
-pdfimages.exe [可选参数] 输入文件.pdf 输出文件名前缀
+pdfimages [可选参数] 输入文件.pdf 输出文件名前缀
 # 执行后自动生成：前缀-000.jpg、前缀-001.png 有序图片文件
 ```
 | 参数        | 作用                                                         |
@@ -130,8 +158,7 @@ pdftoppm -png -r 300 -singlefile input.pdf output
 
 - `-singlefile`：添加了该参数后，只转换首页，而且输出文件名不会添加序号后缀。
 
-
-## 借助 python
+## python 工具
 
 ### img2pdf
 
@@ -139,7 +166,7 @@ pdftoppm -png -r 300 -singlefile input.pdf output
 
 ```sh
 img2pdf 1.png 2.jpg -o 1.pdf
-# 直接封装为 PDF
+# 图片直接封装为 PDF
 
 img2pdf -o output.pdf images/*.jpg
 img2pdf --pagesize A4 -o output.pdf *.png
