@@ -132,3 +132,18 @@
     }
 ]
 ```
+
+## 绑定快捷键
+
+```json
+[
+{
+    "key": "ctrl+alt+n",
+    "command": "workbench.action.tasks.runTask",
+    // 由于只用于运行 rust 命令，所以可以提供一个 editorLangId == rust
+    "when": "editorTextFocus && editorLangId == rust",
+    // 提供 task 的 label 值
+    "args": "rust: run variables"
+},
+]
+```

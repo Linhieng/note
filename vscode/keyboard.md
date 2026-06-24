@@ -33,5 +33,28 @@ resourceExtname == .js
 // 要求没有选中任何文本
 ```
 
+从常用默认快捷键中找到的一些 when
+- breadcrumbsPossible
+- breadcrumbsVisible
+- editorHasCompletionItemProvider
+- textInputFocus
+- editorReadonly
+- suggestWidgetVisible
+- terminal.active
+- editorHasCodeActionsProvider
+- editorTextFocus
+- editorFocus
+- supportedCodeAction=~/(\\s|^)quickfix\\b/
+- editorHasSignatureHelpProvider
+- workbench.panel.output.active
+- terminalProcessSupported
+- terminalWebExtensionContributedProfile
+- terminalFocus
+- foldingEnabled
+- editorHasDocumentSelectionFormattingProvider
+- notebookEditorFocused
+- activeEditorCanToggleReadonly
+- isSessionsWindow
+
 
 [when available-context-keys]: https://code.visualstudio.com/api/references/when-clause-contexts#available-context-keys
