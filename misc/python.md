@@ -1,59 +1,15 @@
-[window 命令行安装 miniconda](https://www.anaconda.com/docs/getting-started/miniconda/install/windows-cli-install)，记得在命令行设置代理
-
-### pip 镜像源
-
-推荐安装 miniconda，从[清华镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)安装。
-
-```sh
-# 设置默认清华源
-pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn
-
-pip config list
-# 查看配置，具体文件通常在 C:\Users\k\AppData\Roaming\pip\ 中的 pip.conf 或 pip.ini
-
-pip config unset global.index-url
-# 取消设置清华源
-```
-
-### conda 镜像源
-
-conda 的包是按「频道」分类管理的，不同的包存在不同的频道下，必须全部配置才能保证下载完整。
-
-```sh
-conda config --set show_channel_urls yes
-# 安装时显示频道源地址，方便排查
-
-# 配置清华源
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
-# 主频道，存放 Python、conda 工具等核心包
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
-# 社区维护的第三方包频道，绝大多数 Python 库都在这里，是最常用的扩展频道
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2/
-# 存放平台的编译工具链，比如 gcc、make，部分包编译需要依赖它
-conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r/
-# 存放 R 语言相关的包（如果不做数据分析也可以不配置）
-
-
-conda config --show channels
-# 查看源
-conda config --remove-key channels
-# 删除所有源，恢复默认
-```
-
-### pipdeptree 
-
-该依赖包按层级查看安装的依赖包
-
-```sh
-pipdeptree | grep -E '^\w+'
-pipdeptree | findstr /B /R /C:"^[^ ]"
-# linux  / window 查看顶级安装包
-```
+[window 使用命令行安装 miniconda]，记得在命令行设置代理
 
 ### conda 管理虚拟环境
 
 miniconda 和 anaconda 区别只在于后者预装了许多数据处理的依赖包，而且提供了GUI图形化界面，适合新手。
+
+注意使用 conda 时不要混用 conda 和 pip 安装包：
+- 方案 A：纯 conda 模式（AI / 数据分析首选，完全不碰 pip）
+  - 所有依赖全部通过 conda install 安装包，全程不用 pip。
+  - 优点：环境完整可控，导出 yml 能 1:1 复现，CUDA、底层库自动兼容。
+- 方案 B：conda 仅管理 Python 版本，pip 接管全部项目依赖（纯 Python 业务项目）
+  - 只用 conda 创建指定 Python 版本的干净环境，全程只用 pip 安装所有业务包，不再执行任何 conda install 安装项目依赖。
 
 ```sh
 conda env list
@@ -114,3 +70,57 @@ conda init --reverse
 - 会把 `k\Scripts`、`k\Lib\site-packages` 加到 PATH 的最前面（优先调用虚拟环境里的工具）
 - 但不会删除原来的 PATH 路径，包括 `miniconda3\Scripts`、`miniconda3\Lib\site-packages` 这些 base 环境的路径
 具体可以通过 where 来查看调用的具体路径，比如 `where python`、`where pip`。
+
+
+### pip 镜像源
+
+推荐安装 miniconda，从[清华镜像源](https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/)安装。
+
+```sh
+# 设置默认清华源
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+pip config set global.trusted-host pypi.tuna.tsinghua.edu.cn
+
+pip config list
+# 查看配置，具体文件通常在 C:\Users\k\AppData\Roaming\pip\ 中的 pip.conf 或 pip.ini
+
+pip config unset global.index-url
+# 取消设置清华源
+```
+
+### conda 镜像源
+
+conda 的包是按「频道」分类管理的，不同的包存在不同的频道下，必须全部配置才能保证下载完整。
+
+```sh
+conda config --set show_channel_urls yes
+# 安装时显示频道源地址，方便排查
+
+# 配置清华源
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+# 主频道，存放 Python、conda 工具等核心包
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+# 社区维护的第三方包频道，绝大多数 Python 库都在这里，是最常用的扩展频道
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2/
+# 存放平台的编译工具链，比如 gcc、make，部分包编译需要依赖它
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r/
+# 存放 R 语言相关的包（如果不做数据分析也可以不配置）
+
+
+conda config --show channels
+# 查看源
+conda config --remove-key channels
+# 删除所有源，恢复默认
+```
+
+### pipdeptree
+
+该依赖包按层级查看安装的依赖包
+
+```sh
+pipdeptree | grep -E '^\w+'
+pipdeptree | findstr /B /R /C:"^[^ ]"
+# linux  / window 查看顶级安装包
+```
+
+[window 使用命令行安装 miniconda]: https://www.anaconda.com/docs/getting-started/miniconda/install/windows-cli-install
