@@ -1,5 +1,47 @@
 {
 
+    // 和 "terminal.integrated.defaultProfile.windows": "Git Bash", 搭配使用
+    // "terminal.integrated.profiles.windows": {
+    //     "Git Bash": {
+    //         "path": "C:\\Program Files\\Git\\bin\\bash.exe"
+    //     },
+    //     "Conda": {
+    //         "path": "cmd.exe",
+    //         "args": [
+    //             "/K",
+    //             "C:\\Users\\k\\Anaconda3\\Scripts\\activate.bat C:\\Users\\k\\Anaconda3"
+    //         ]
+    //     },
+    //     "Anaconda PowerShell": {
+    //         "path": "pwsh.exe",
+    //         "args": [
+    //           "-ExecutionPolicy",
+    //           "ByPass",
+    //           "-NoExit",
+    //           "-Command",
+    //           "& '${env:USERPROFILE}\\Anaconda3\\shell\\condabin\\conda-hook.ps1' ; conda activate '${env:USERPROFILE}\\Anaconda3'"
+    //         ]
+    //     }
+    // },
+    // "terminal.integrated.profiles.windows": {
+    //     "PowerShell": {
+    //         "path": "C:\\Program Files\\PowerShell\\7\\pwsh.exe"
+    //     },
+    //     "Command Prompt": {
+    //         "path": [
+    //             "${env:windir}\\Sysnative\\cmd.exe",
+    //             "${env:windir}\\System32\\cmd.exe"
+    //         ],
+    //         "args": [],
+    //         "icon": "terminal-cmd"
+    //     },
+    //     "Git Bash": {
+    //         "source": "Git Bash",
+    //         "icon": "terminal-git-bash"
+    //     }
+    // },
+    // "terminal.integrated.defaultProfile.windows": "PowerShell",
+
     "editor.codeActionsOnSave": {
         // 并不适用与所有 fixAll，通常是搭配 ts 语言和 ESLint 插件
         "source.organizeImports": "always",
