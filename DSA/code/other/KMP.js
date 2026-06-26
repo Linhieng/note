@@ -1,7 +1,8 @@
 check(bruteForce)
-check(KMP)
 check(KMP1)
 check(KMP2)
+check(KMP2_1)
+check(KMP2_2)
 check(KMP22)
 check(KMP3)
 console.log('✅');
@@ -51,6 +52,45 @@ function KMP22(str, pattern) {
     return -1
 }
 function KMP2(str, pattern) {
+    const getNext2 = pattern => {
+        // 这里的实现，next[0] 不能任意
+        // 因为后面的 kmp 中会访问到 next[0]
+        // 这里专门弄个 -1，其实就是简化了代码量
+        const next = [-1]
+        let k = -1
+        let j = 0
+        while (j < pattern.length) {
+            if (k === -1 || pattern[k] === pattern[j]) {
+                j++
+                k++
+                next[j] = k
+            } else {
+                k = next[k]
+            }
+        }
+        return next
+    }
+
+    const next = getNext2(pattern)
+
+    let i = 0
+    let j = 0
+    while (i < str.length && j < pattern.length) {
+        if (j === -1 || str[i] === pattern[j]) {
+            i++
+            j++
+        } else {
+            j = next[j]
+        }
+    }
+
+    if (j === pattern.length) {
+        return i - j
+    }
+    return -1
+}
+/** 第二种 next 数组的第二种实现 */
+function KMP2_1(str, pattern) {
     const getNext2 = (pattern) => {
         let k = -1
         let j = 0
@@ -88,6 +128,51 @@ function KMP2(str, pattern) {
 
     return -1
 }
+/** 第二种 next 数组的第三种实现 */
+function KMP2_2(str, pattern) {
+    const getNext2 = pattern => {
+        const next = [0]
+        let k = 0
+        let j = 1
+        while (j < pattern.length) {
+            if (pattern[k] === pattern[j]) {
+                next[j] = k + 1
+                j++
+                k++
+            } else if (k > 0) {
+                k = next[k - 1]
+            } else {
+                next[j] = 0
+                j++
+            }
+        }
+        // 其实可以简单的往头添加一个元素，就变成第二个 next 了
+        // 而且这个元素是无所谓的，因为我们的 KMP 中永远不会调用
+        // 到 next[0] 的值。
+        next.unshift(null)
+        return next
+    }
+    const next = getNext2(pattern)
+
+    let i = 0
+    let j = 0
+    while (i < str.length && j < pattern.length) {
+        if (str[i] === pattern[j]) {
+            i++
+            j++
+        } else if (j > 0) {
+            // 换成第二个 next 后，这里就可以是 next[j] 了
+            j = next[j]
+        } else {
+            i++
+        }
+    }
+
+    if (j === pattern.length) {
+        return i - j
+    }
+    return -1
+}
 function KMP1(str, pattern) {
     const getNext1 = (pattern) => {
         let k = 0
@@ -99,7 +184,7 @@ function KMP1(str, pattern) {
                 k++
                 j++
             } else if (k > 0) {
-                // 这里是 k - 1 哦。计算算一下 bba 的 next 就知道了
+                // 这里是易错点。求第一个 next 数组时，记得这里要 k-1。自己算一下 aab 就知道了
                 k = next[k - 1]
             } else {
                 next[j] = 0
@@ -117,7 +202,9 @@ function KMP1(str, pattern) {
             i++
             j++
         } else if (j > 0) {
-            // 这里变成了 j - 1
+            // 易错点。这里也是一样的道理，我们需要 j - 1
+            // 因为当前的 si tj 是不相同的，但 si-1 和 tj-1 是相等的
+            // 我们需要需要查找的前后缀是不包含 j 所在字符的
             j = next[j - 1]
         } else {
             i++
@@ -175,60 +262,6 @@ function KMP3(str, pattern) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function KMP(str, pattern) {
-    const getNext = (pattern) => {
-        let k = -1, j = 0
-        const next = [-1]
-        while (j < pattern.length) {
-            if (k === -1 || pattern[k] === pattern[j]) {
-                k++
-                j++
-                next[j] = k
-            } else {
-                k = next[k]
-            }
-        }
-        return next
-    }
-
-    const next = getNext(pattern)
-    let i = 0, j = 0
-    while (i < str.length && j < pattern.length) {
-        if (j === -1 || str[i] === pattern[j]) {
-            i++
-            j++
-        } else {
-            j = next[j]
-        }
-    }
-
-    if (j >= pattern.length) {
-        return i - pattern.length
-    }
-
-    return -1
-}
 
 function bruteForce(str, pattern) {
     let [i, j] = [0, 0]
