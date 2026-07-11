@@ -3,7 +3,53 @@
   - 只要输出的内核版本带 `-`，则说明使用的是分发版linux（比如Ubuntu等）。此时需要查看对应分发版linux的手册。
   - 如果是核心linux，输出内容只会有版本号。核心linux版本可以查看对应 [kernel release]
 
+## 命令常识
+
+- POSIX 规范：跨 Unix（Linux/macOS/BSD/AIX）通用标准，所有合规程序必须遵守，写脚本、跨平台工具必须优先遵循；
+- GNU 扩展规范：Linux 上 coreutils/procps/util-linux 等工具独有，macOS/BSD 不一定支持，仅 Linux 日常使用、本地脚本可用。
+
+常见 POSIX 规范
+- 短选项 `-` 后面只跟单个英文字母，比如 `-v`
+- 无参数的短选项支持连续拼接，比如 -a -b -c = -abc
+- 单独写 `--`，代表后面所有内容不再解析为命令参数，全部视为文件 / 操作字符串
+- 选项在前，参数在后。
+
+常见 GNU 扩展规范
+- 短选项配套对应长选项，可读性强，比如 `--version`
+- 传参可以使用 `--key=value` 或 `--key value`
+
+
+## 未整理
 ```sh
+getconf PAGE_SIZE
+# 查看内存页单位，通常是 4096，也就是 4KiB。
+# tips：存储的计量单位通常都是 Byte，网络场景则喜欢 bit。
+
+watch -n 0.1 -d free -h
+# 使用 watch 界面，每0.1 秒刷新，查看 free -h 的情况。-d 表示高亮变化区域
+# 退出使用 ctrl+c
+# 其实 free 本身有 -s 实时刷新参数，不过是频繁输出，不好看
+
+fg
+# 恢复最近一个暂停任务
+bg
+# 后台恢复最近暂停任务
+# ctrl+z 是挂起，ctrl+c是终止
+jobs -l
+# 查看终端后台作业（仅当前 shell
+
+pgrep -u k2
+# 查看 k2 的所有进程 PID
+kill $(pgrep -u k2)
+# 杀死 k2 用户所有进程
+
+who -b
+uptime
+uptime -p
+last reboot
+cat /proc/uptime
+# 查看开机时间
+
 getpcaps [PID]
 getpcaps $$
 # 属于 libcap2-bin / libcap 工具包，专门用来查看正在运行进程的 Linux Capability（能力集）。
@@ -58,6 +104,41 @@ bash 用于支持配置命令（sh 通常只支持 POSIX 等命令，用于兼�
 
 TTY = Teletype / Teletypewriter 电传打字机。早年计算机没有显示器、鼠标，人机交互靠一台叫「电传打字机」的硬件设备：一边打字输入指令，一边打印输出结果，设备缩写就是 TTY。Linux 沿用这个概念，把所有能输入输出文本的终端交互接口统一叫 tty。当使用 VNC 远程连接时，使用 w 命令可以看到来源时 tty
 
+## 基础工具
+
+### grep
+
+```sh
+命令 | grep [参数] "匹配内容"
+# 管道用法（最常用）
+
+grep [参数] "匹配内容" 文件名
+# 其他用法
+```
+以实际命令来学习
+```sh
+cat /proc/meminfo | grep -w -e Buffers -e Cached -e SReclaimable
+grep -wi -e Buffers -e Cached -e SReclaimable /proc/meminfo
+# 从文件 /proc/meminfo 中读取出 Buffers + Cached + SReclaimable 的值
+# -w 表示精准匹配（默认模糊匹配）
+# -i 表示忽略大小写（默认严格大小写）
+# -e 表示增加匹配内容（解释的好像不太好，但懂那个意思）
+
+systemctl status user.slice | grep -m 1 "Memory:"
+# -m 1 只取第一个匹配到的值
+```
+
+## 文件系统
+
+```sh
+ls
+# 输出的 total 统计的是目录下所有普通文件一共占用了多少个文件系统的块（block）；
+# 实际磁盘占用 = total × 单 block 字节大小
+# 等待验证。
+stat -f /run
+
+```
+
 ## 用户和权限
 
 ### 用户管理和权限分配
@@ -81,14 +162,27 @@ passwd k
 # 然后将公钥内容复制到服务器 /home/[user]/.ssh/authorized_keys 文件中。
 # 这样就可以通过秘钥登录了
 
+su k2
+# 切换为 k2 身份，但环境不变。
+su - k2
+# 切换 k2 登录，但环境也变更为 k2 的
+sudo su - k2
+# 如果忘记 k2 密码，但知道自身密码以及具有管理员权限，可以免密码登录 k2
 su -
+# 后面不带用户名，代表切换 root 登录，需要输入 root 密码
+# su 不一定成功，比如 k2 没有设置密码时代表密码不可用，此时 su k2 是无法切换过去的。
+# 或者说系统设置了 pam_wheel 权限
+
+
 # 切换为 root，需要 root 密码
 sudo -i
 # 切换为 root 权限
 
 passwd -S k2
+# 查看用户 k2 的密码情况
 # P 代表已设置可用密码
 # L 代表密码锁定（无有效登录密码）
+
 
 chgrp # 改变文件所属群组
 chown # 改变文件拥有者
@@ -126,8 +220,14 @@ cat /etc/ssh/sshd_config | grep PasswordAuthentication
 
 whoami
 who
+who -uH
 id
 w
+tty
+users
+# 上面这些都只能看到顶层用户（SSH、VNC），诸如 vscode 这种远程连接的是看不到的
+# 此时可以使用进程搜索哪些用户在线
+ps -eo user | sort -u
 
 ```
 
@@ -149,6 +249,47 @@ sudo dmesg -wT
 sudo dmesg -c
 # -c 打印日志然后清空。-C 是直接清空
 
+
+journalctl -k --since "2026-07-08 14:00" --until "2026-07-09 05:00" > oom_history.log
+# ？
+```
+
+## systemd
+
+systemd 切片专属命名规则是短横线`-`表达层级父子关系，比如创建了 root-users.slice.d 文件后，会自动派生出 root.slice 父节点，该节点没有独立 .slice 实体文件。
+
+```sh
+systemd --version
+systemd-run
+# 不修改磁盘 .service 文件，临时创建 transient（瞬时）服务
+systemd-cgls
+# 可视化树形查看cgroup层级（最直观）
+systemctl list-units -t slice --all
+systemctl list-unit-files -t slice
+```
+
+## systemctl
+
+添加 `--runtime` 参数代表仅写入临时内存配置目录 /run/systemd/system.control/user-0.slice.d/，不会持久化到 /etc，方便测试。
+
+
+```sh
+systemctl set-property --runtime user.slice MemoryMax=1.5G MemorySwapMax=0
+# 配置所有用户最大内存占用，包括root用户
+systemctl set-property --runtime user-0.slice MemoryMin=200M
+# 然后再单独为 root 用户配置最小内存占用（不配置不行，VNC同样会无法登录）
+# 那只配置 root 的最小内存呢？测试了，不行，普通用户依旧可以占满内存。
+systemctl show user.slice | grep Memory
+# 查看配置情况
+
+
+systemctl set-property --runtime user-0.slice MemoryMin=
+# 想要恢复默认值，可以直接留空
+systemctl revert user-0.slice
+# 或者直接使用 revert，它会删除该 slice 所有 drop-in 覆盖文件（包含 /run 下 --runtime 生成的临时配置、/etc 持久配置）
+
+systemctl set-property --runtime system.slice MemoryMin=50M
+systemctl revert system.slice
 ```
 
 ## /proc
@@ -171,6 +312,11 @@ pstree -p
 pstree -ap
 # 显示 PID 和进程命令（不一定显示全）
 
+ps -eo user | sort -u
+# -e：every，显示系统全部进程
+# -o user：自定义输出字段，只查看 user 列
+# sort -u 排除并去重（--unique）
+
 ps -u k -o rss | awk 'NR>1{sum+=$1}END{print sum/1024,"MB"}'
 # 查看用户 k 所有进程占用物理内存总和。
 
@@ -185,24 +331,43 @@ ps -o pid,ppid,cmd -p [pid]
 
 ### free
 
+free 属于 procps-ng（procps）工具集，本质上读取的是 /proc/meminfo 数据，用于查看物理内存和交换内存情况，有以下值，默认单位是 KiB，原因是 /proc/meminfo 中使用 KiB 作为单位：
+- total：总内存，读取 MemTotal / SwapTotal 值
+  - 具体地说，MemTotal = 物理总内存 - 硬件预留内存 - 内核占用内存
+  - 想要查看物理总内存，可以直接查看 bios 数据 `dmidecode -t memory`
+- free：裸空闲内存，读取 MemFree / SwapFree 值
+  - 属于狭义上的空闲内存，不考虑可回收内存等信息
+- shared：共享内存，读取 Shmem 值，主要是 tmpfs 占用内存
+- available：可用内存，读取 MemAvailable 值（内核≥3.14）
+- buffers：内核块设备缓冲，读取 Buffers 值
+- cache：文件页缓存 + 可回收 slab 内存。通过计算 Cached + SReclaimable 得到
+- buff/cache：buffers + cache
+- used：已使用内存，也就是“总的”减去“可用的”，具体是通过计算 MemTotal - MemFree - Buffers - Cached - SReclaimable / SwapTotal - SwapFree 值得到。
+  - 注意，SwapCached 值指曾经被换出到 swap，之后又重新加载回内存，但 swap 并不会回收这块数据，目的是下次回收时，不需要再次写入 swap ，这能节省磁盘 IO 开销。所以计算 swap used 时不会减去 SwapCached
+
 ```sh
 free -h
-               total        used        free      shared  buff/cache   available
-Mem:           1.7Gi       490Mi       120Mi       2.0Mi       1.1Gi       1.0Gi
-Swap:             0B          0B          0B
+# --human，自动适配单位
+
+systemctl status user.slice | grep -m 1 "Memory:"
+# 查看 user.slice 的内存占用情况
 ```
-- total 代表的是物理总内存大小
-- free 代表的是完全干净、无数据、没被缓存占用的裸物理页。
 
 ### top
 
 `top` 和 `ps` 一样，只不过是实时系统资源监控工具。
 - 按键 `e` 切换内存单位 KiB / MiB / GiB
+- 按键 `d` 设置刷新间隔（单位秒）
 
 - `htop`
 - `pidstat`
 
 ```sh
+top -e g -E g
+# -e 指定进程列表 VIRT/RES/SHR 单位
+# -E 指定顶部内存行 Mem/Swap 单位
+# 可选值：k(KiB) / m(MiB) / g(GiB) / t(TiB) / p(PiB) / e(EiB)
+
 top -d 0.1
 # 指定刷新间隔0.1s（默认3s）
 top -u k

@@ -5,6 +5,8 @@
 - 文件系统
 ## draft
 
+systemd 是什么，和 `systemctl` 和 `sysctl` 命令关系
+snap 软件包又是什么
 
 ## 文件系统
 
@@ -48,8 +50,14 @@ Linux中一切皆文件
     - /proc/sys/net/：网络内核参数（TCP 连接、端口、缓冲区）
     - /proc/sys/fs/：文件系统参数（最大打开文件数等）
   - /proc/meminfo、/proc/cpuinfo、/proc/uptime：可用于读取整机全局硬件 / 资源状态，无修改能力。
+  - /proc/self/
 - /etc
--
+- /run 运行时数据，挂载在内存，重启失效。所谓临时配置就是在这里
+  - /run/systemd/system.control/user-0.slice.d/
+- /var
+  - /var/run/utmp
+- /sys
+  - /sys/fs/cgroup/
 
 #### /etc/ssh/sshd_config
 
