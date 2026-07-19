@@ -1,5 +1,19 @@
+# OOM、oom Killer、NUMA、D-Bus 通信标准
 
-cgroup
+专门写篇文章介绍一下
+# linux 高级
+
+linux 高级，只记录 linux 内核相关的。
+
+内核，主要负责：
+- 硬件抽象：驱动管理 CPU、内存、磁盘、网卡等硬件；
+- 进程管理：进程创建、调度、信号、cgroup、namespace 隔离；
+- 内存管理：虚拟内存、页表、缓存、swap、内存回收、OOM；
+- 文件系统：ext4/xfs/tmpfs/proc/sysfs 虚拟文件；
+- 网络协议栈：TCP/IP、socket；
+- 权限安全：用户 / 组、文件权限、capability；
+- 系统调用：对外暴露统一接口，给用户态程序使用；
+- 中断、时钟、锁、内核模块等底层基础设施。
 
 ## 内核、进程
 
@@ -7,84 +21,76 @@ cgroup
 
 ### [cgroup v2]
 
-cgroup格式模板为 `层级ID::控制组路径`，而 cgroup v2 的一个重大变更，就是摒弃了 v1 多独立层级的设计，全局只有单一统一层级，层级编号固定就是 `0`；在 v1 中，各子系统会有专属层级号。
+cgroup 是 control group 的缩写，文档术语规定了首字母永远不大写，默认挂载到 `/sys/fs/cgroup/` 目录中。
 
-- /sys/fs/cgroup/
-  - user.slice
-  - system.slice
-  - machine.slice
-  - init.scope
-  - systemd.slice
+cgroup 是 Linux 内核进程分层资源管控机制，主要由两部分组成：core 和 controllers。cgroup core 负责进行层级化，cgroup controllers 主要负责资源管控。资源管控从上至下传递，子 cgroup 无法突破父级资源限制。
 
-三层管理资源：Slice（大分组） → Scope/Service（进程组） → 进程
+资源管控，主要管控的是 CPU、内存、IO、进程线程数量、网卡等等。
 
-#### 用户切片
+[cgroup v1 和 v2 版本对比]：
+- v1 中采用多个独立层级，cpu、memory、io、pid等各自都是独立树形目录。v2 则采用统一层级，之前的独立层级全部挂到 `0::` 下。格式为 `0::$PATH`。可以通过 `/proc/$PID/cgroup` 文件查看进程归属 cgroup。
+- v1 中父子层级约束混乱，v2 中解决了这个问题（资源管控自上而下传递）
+  - 子 cgroup 无法突破父节点的资源限制
+  - 子 cgroup 只能启用父节点允许的控制器
+  - 父节点若开启域控制器，自身不能存在运行进程，彻底隔离父内部进程与子组资源竞争；（但根 cgroup 豁免该限制，承载系统匿名资源；）
+- v1 各控制器接口不统一、语义割裂，v2 全局标准化接口规范，所有控制器复用同一套语义。
+- v1 线程 / 进程模型混乱，v2 区分 domain/threaded 双模型。在 domain 模式下，一个进程的所有线程都必须属于同一个 cgroup
 
-- `user.slice` 是父切片，限制全部用户进程总和，不存在所有优先级问题。
-- `/etc/systemd/system/user-.slice.d/` 是模板前缀，代表每位用户的默认设置，优先级低于实例 user-xx.slice。并且该模板只能手动创建文件（直接就是永久生效）
-- `user@.service` 是 ？
 
-登录时用 PAM + systemd 模板 user@.service 区分 UID，只对 UID≥1000 加载限制
-单独为 root 创建 slice，开机时自动将 root 从 user.slice 中移除。
+可以直接读写配置文件进行操作 cgroup，也可以借助 systemd 软件管理
 
 ```sh
-systemctl set-property --runtime user.slice MemoryMax=700M MemorySwapMax=0
-# 配置所有用户最大内存占用，包括root用户
-systemctl set-property --runtime user-0.slice MemoryMin=200M
-# 然后再单独为 root 用户配置最小内存占用
-systemctl show user.slice | grep Memory
-# 查看配置情况
-
-
-# 创建临时目录
-mkdir -p /run/systemd/system/root-users.slice.d
-# 写入配置文件，注意，root-users.slice 这种命令，会让 systemd 自动派生父节点 root.slice
-cat > /run/systemd/system/root-users.slice.d/override.conf <<'EOF'
-[Slice]
-MemoryMax=max
-CPUWeight=10000
-TasksMax=infinity
-EOF
-# 重载systemd让配置生效
-systemctl daemon-reload
-systemd-run --slice=root-users.slice --shell
-# systemd-run：临时创建一个临时 systemd 服务单元
-# --slice=root-users.slice：指定归属 cgroup 切片
-# --shell：直接启动交互式 bash shell
-
-cat /proc/self/cgroup
-# 可以查看当前 shell 属于哪个切片。
-systemctl cat root-users.slice
-# 查看 slice 资源配置
-systemctl list-units --type=scope
-# 查看正在运行的临时 scope
+cat /sys/fs/cgroup/xxx子组/控制文件
+# 读取配置
+echo xxx > /sys/fs/cgroup/xxx子组/控制文件
+# 同步（阻塞）修改配置
 ```
 
-[cgroup 内存控制]
+#### [cgroup 内存管理]
 
-规则 A：memory.max（父 user.slice=300M）是整个父组总占用天花板
-user.slice 下所有子 slice（user-0、user-1000、user-1001…）进程内存总和 ≤300M，一旦总和触达 300M，父 cgroup 触发全局回收 / 内部 OOM。
-这个上限是累加统计：root 占用 + 所有普通用户占用 合并计算，没有自动给 root 预留 200M 空白额度。
-规则 B：memory.min=200M 仅保护「user-0 已经占用的内存」，不预留空白内存
-min 的生效逻辑：
-root 已经跑起来的进程占用了 X MB（X≤200M）→ 这 X MB 内核绝不回收；
-root 还没用到的 200-X MB，不会锁死、不会隔离，完全可以被普通用户进程占用；
-普通用户占用总和可以轻易超过 100M，只要 root + 普通用户 合计不超父 300M 上限。
+cgroup 内存管理中，
+- 父子层级有额度竞争：父额度是子组总额度上限，子组总额度超额时，按实际占用比例瓜分父级保护额度；
+- 额度的单位是字节，并且会自动向上对齐 PAGE_SIZE（通常是4096B）
 
-min和max是硬限制。
-low和high是软限制，就是可能被突破
-比如low规定的内存可能被回收，但min规定的内存肯定不会被回收。
+四种保护档位
+- memory.min：硬保护，当实际内存占用低于该值时，无论系统压力多大，都不回收该 cgroup 的内存。无可回收内存时直接 OOM；
+- memory.low：相比 min 更宽松，系统压力过大时会回收该 cgroup 的内存；
+- memory.max：硬上限，当 cgroup 占用内存触及硬上限，并且没有可以回收的内存时，触发 OOM。
+- memory.high：相比 max 更宽松，可以超出 high 值而不是直接触发 oom，但超限后 cgroup 内进程会被节流限流，同时承受高强度内存回收压力；
+- 注意，max 和 high 有两种编辑方式：O_WRONLY（阻塞式/同步）和 O_NONBLOCK（非阻塞式/异步）。
+- 使用命令行的编辑都是同步，同步修改后会进行同步回收、oom等操作。
+- 通过编程语言可以传递 O_NONBLOCK 进行异步修改，异步修改会跳过同步回收、OOM 触发逻辑，延迟到下一次内存分配时处理。这个“延迟到下一次内存分配时再处理”意味着风险，如果业务侧持续疯狂申请、刷写内存，不触发新内存分配，那么内存占用将长时间高于 high/max。
 
-前面的配置是不合理的，
-user@.slice 是 systemd 模板单元，所有 UID≥1000 的普通用户会话自动生成 user-$UID.slice，可通过模板 drop-in 批量限制，不会作用于 UID=0 的 user-0.slice。
+#### [cgroup IO管理]
 
-system.slice、user.slice、user-xxx.slice、user@.slice
-又多少 slice？ssh登录时使用的是 system.slice？
+IO 控制器支持两种资源管控模型：一是按权重比例分配 IO 资源（只有在）；二是设置硬上限限制，上限可选择限制带宽或 IOPS
 
-### OOM、oom Killer、NUMA
+io-interface-files：基础限流、权重、监控（最核心）
+writeback：缓冲写脏页 IO 专项管控（内存 + IO 联动）
+io-latency + how-io-latency-throttling-works + io-latency-interface-files：完整一套 IO 延迟保障 QoS（概述 + 原理 + 配置文件）
+io-priority：全局批量调整进程 IO 抢占优先级
 
-专门写篇文章介绍一下
+- $CGROUP/io.stat
+  - rbytes：累计读取字节，全盘扫描会暴涨；
+  - rios：累计读 IO 次数，大量小文件扫描该值飙升；
+  - depth/avg_lat（开启 io.latency 后出现）：磁盘队列深度、平均 IO 延迟，D 进程越多 avg_lat 越高；
+- 开启 io.latency，io.stat 会新增
+  - avg_lat：IO 平均完成延迟，全盘扫描会从几 ms 飙升至几十 / 上百 ms；
+  - depth：磁盘排队 IO 深度，队列越长进程越容易 D 阻塞。
+  - $CGROUP/memory.stat 中 file 字段 = 文件页缓存，扫描文件越多该值越大。
+- $CGROUP/io.pressure
+  - some：部分进程等待 IO 的时长；
+  - full：组内所有进程都卡在 IO 等待（大量 D 进程时该数值持续上涨）；只要 full 数值持续走高，就说明全盘扫描的读 IO 把磁盘打满，进程无法获取 IO 资源进入 D 状态。
 
+- io.max 硬限制读带宽 / 读 IOPS
+- io.weight 权重分配（多业务共享磁盘场景）。前提：磁盘调度器切换为 bfq
+- io.latency 给核心业务 cgroup 设置延迟目标，磁盘拥塞时内核自动节流扫描任务 cgroup，优先保障核心业务 IO 延迟。逻辑：当扫描任务把磁盘打满、业务 IO 延迟超过 75ms，内核主动限制扫描 cgroup 的并发 IO 数量，降低扫描抢占，业务进程不会进入 D 状态。
+- io.prio.class 把全盘扫描的 cgroup 所有进程 IO 优先级改为最低 IDLE，只有磁盘完全空闲时才允许扫描读 IO，完全不抢占业务 IO。
+
+```sh
+cat /sys/block/[xx]/queue/scheduler
+# 查看当前支持的调度器，默认 mq-deadline
+```
 
 ### `/proc/[pid]`
 
@@ -96,7 +102,7 @@ oom 取值区间固定：-1000 ~ 1000，默认值全部为 0，表示完全按�
 指定为 -1000 表示豁免，但也仅屏蔽系统全局 OOM Killer，如果是 cgroup 内存限制触发的容器内部 OOM，该参数不生效。
 可以直接使用 `echo -1000` 或者 `choom` 命令人工调节偏移量。
 
-### /proc/zoneinfo 和 /proc/meminfo
+### /proc/zoneinfo 和 [/proc/meminfo]
 
 
 
@@ -169,11 +175,12 @@ sysctl -w # 啥作用？
   - 当 overcommit_memory 为 2（never模式） 时，取所有工具最大虚拟内存 VSZ + 全部 RSS 之和，x86_64 架构建议 128MB。
   - 该值不受 overcommit_memory 影响，一直生效
   - TODO：实际测试下来，物理内存1.7G，无交换，设置 admin_reserve_kbytes 为1G，guess模式，然后用普通用户压测，依旧可以占满内存让所有用户都无法操作，只不过使用 stress-ng 压测会触发 oom，但使用 vscode 则不会 oom
-  - 原因是该值只限制一次性的虚拟内存申请（无法测试成功），并不是强制保留 1G 物理内存不给普通用户（这句话到是对的）。
-  - 使用c代码一次性申请 1380，会消耗10多秒才申请到内存，并且占用10多秒后就会被kill。
-  - 但申请 1352MiB 空间，就能够申请成功，并且持续占用，此时会发现 root 用户明显卡顿，新建 ssh 登录也会发现无法登录，这不就是 vscode 的场景！我现在是弄出了我想要的可复现的场景出来！有点区别的就是我精准的控制了内存占用大小，不会被 kill，但同时又会导致所有用户卡顿，无法ssh登录，而且我可以随时 ctrl+c 终止这种状态！
+  - 原因是该值只限制一次性的虚拟内存申请（无法测试成功），并不是强制保留 1G 物理内存不给普通用户。
+  - 使用c代码一次性申请 1380MiB，会消耗10多秒才申请到内存，并且占用10多秒后就会被kill。
+  - 但申请 1352MiB 空间，就能够申请成功，并且持续占用，此时会发现 root 用户明显卡顿，新建 ssh 登录也会发现无法登录，这不就是 vscode 的场景！我现在是弄出了我想要的可复现的场景出来！有点区别的就是我精准的控制了内存占用大小，不会被 kill，但同时又会导致所有用户卡顿，无法ssh登录，而且我可以随时 ctrl+c 终止这种状态（当然也会卡顿10多秒，但好过等好几个小时）！
   - 测试发现，不管我设不设置该值，普通用户都能申请 1352MiB 空间，并导致所有用户卡顿。
   - 如果我改成 never 模式呢？崩，所有用户直接被强制退出，无法登录，VNC也一样！大概率是因为我前面操作了一些东西，导致很多进程占用了申请的内存，所以其他进程就无法继续申请内存了，连root也无法申请。重启一下再改为 never 就没问题了，但也只是 root 用户没问题，普通用户登进去只敲了个 `w` 就被闪退了
+  - 总的来说，这个参数没什么用，具体可以看看 [博客VmAdminReserveNotEnough]，不过这篇文章说 已登录的 root 可以使用该保留的内存，我实测下来发现普通用户占满内存后，已登录的root依旧卡顿，没法使用保留的内存。
 - user_reserve_kbytes
   - 当 overcommit_memory 为 2 时生效。
   - 给用户预留的内存。默认128MiB
@@ -186,6 +193,8 @@ sysctl -w # 啥作用？
   - 设置内核强制预留的最小空闲物理内存（单位：KiB）
   - 这是用来隔离「内核」和「上层应用」的，和用户无关系，
   - 低于该值时会触发进程同步回收、卡死、OOM。
+  - /proc/meminfo 中的 MemAvailable 计算时，会先用 MemFree 减去 min_free_kbytes 值。不过修改此值对用户的感知只是可用内存变少了，毕竟保留的内存并不会给用户使用，所以内存占满时，依旧会无法敲命令，无法ssh登录。
+  - 验证方法：该值默认是 44MiB，用自建函数占用临界值内存，执行 `free` 命令会发现 free 值比 available 大 44。修改此值为100MiB，再次用自建函数占用临界值内存，会发现临界值内存变小了，并且查看到的 free 值比 available 大 100。两个值都可以找到临界值内存，也就是占用此内存后，所有用户卡顿，并且占用内存的进程不会被 oom killer
 
 - zone_reclaim_mode
   - NUMA 节点本地内存耗尽时优先回收本地缓存，避免跨节点分配、延迟本地 OOM 触发。
@@ -274,6 +283,10 @@ laptop_mode
 ```
 
 
-[/proc/sys/vm]: https://docs.kernel.org/admin-guide/sysctl/vm.html
-[cgroup 内存控制]: https://kernel-internals.org/mm/memcg-hierarchy/
 [cgroup v2]: https://docs.kernel.org/admin-guide/cgroup-v2.html
+[cgroup 内存管理]: https://docs.kernel.org/admin-guide/cgroup-v2.html#memory-interface-files
+[cgroup IO管理]: https://docs.kernel.org/admin-guide/cgroup-v2.html#io
+[/proc/meminfo]: https://www.kernel.org/doc/Documentation/filesystems/proc.rst
+[/proc/sys/vm]: https://docs.kernel.org/admin-guide/sysctl/vm.html
+[博客VmAdminReserveNotEnough]: https://utcc.utoronto.ca/~cks/space/blog/linux/VmAdminReserveNotEnough
+[cgroup v1 和 v2 版本对比]: https://docs.kernel.org/admin-guide/cgroup-v2.html#issues-with-v1-and-rationales-for-v2

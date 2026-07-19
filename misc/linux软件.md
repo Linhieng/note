@@ -31,11 +31,12 @@ gcc alloc_mem.c -o alloc_mem
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/mman.h>
+#include <sys/mman.h> // mmap / munmap 内存映射系统调用、映射宏定义
 
 // 参数：./alloc_mem 占用大小(MB)
 int main(int argc, char **argv)
 {
+	// 入参校验
     if (argc != 2) {
         printf("Usage: %s MB\n", argv[0]);
         return 1;
@@ -49,10 +50,13 @@ int main(int argc, char **argv)
         perror("mmap failed");
         return 2;
     }
-    // 全量写入，确保全部物理页绑定，避免缺页延迟分配
+    // memset逐字节写入内存，强制 CPU 访问每一页虚拟内存，确保全部物理页绑定，避免缺页延迟分配
     memset(p, 0x55, bytes);
-    printf("Success alloc %ld MB memory, hold 300s\n", mb);
-    sleep(300);
+	// 执行到 printf 这一行时，指定大小的物理内存已经 100% 全部占用完毕，没有惰性延迟分配。
+    printf("Success alloc %ld MB memory, hold 60s\n", mb);
+    sleep(60);
+
+	// mmap 配套释放函数，归还虚拟内存与物理内存给操作系统；
     munmap(p, bytes);
     return 0;
 }
