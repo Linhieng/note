@@ -10,7 +10,7 @@ linux 内核，是纯底层管理程序，无内置命令、无脚本解释器�
 
 ## 命令常识
 
-- POSIX 规范：跨 Unix（Linux/macOS/BSD/AIX）通用标准，所有合规程序必须遵守，写脚本、跨平台工具必须优先遵循；
+- [POSIX 规范]：跨 Unix（Linux/macOS/BSD/AIX）通用标准，所有合规程序必须遵守，写脚本、跨平台工具必须优先遵循；
 - GNU 扩展规范：Linux 上 coreutils/procps/util-linux 等工具独有，macOS/BSD 不一定支持，仅 Linux 日常使用、本地脚本可用。
 
 常见 POSIX 规范
@@ -18,6 +18,8 @@ linux 内核，是纯底层管理程序，无内置命令、无脚本解释器�
 - 无参数的短选项支持连续拼接，比如 -a -b -c = -abc
 - 单独写 `--`，代表后面所有内容不再解析为命令参数，全部视为文件 / 操作字符串
 - 选项在前，参数在后。
+- 单引号的内容代表字符串，但不能包含单引号
+- 双引号的内容保留 `$` 和 `\` 的特殊功能
 
 常见 GNU 扩展规范
 - 短选项配套对应长选项，可读性强，比如 `--version`
@@ -190,12 +192,13 @@ AI 分类：
 - 通用运维工具：cal、more、script、uuidgen、whereis、column、flock
 
 
-### IO 相关
+### ionice
 
-- ionice 用于配置进程I/O调度类和优先级，IO调度类有三种：Idle(3)、Best-effort(2)、Realtime(1)
+- ionice 用于配置进程I/O调度类和优先级，IO调度类有三种：Idle(3)、Best-effort(2)、Realtime(1)、none(0)
   - Idle：最低优先级，仅系统无其他 IO 时才允许该进程读写磁盘；普通用户可用，无优先级层级。
   - Best-effort：系统进程默认类别；搭配优先级层级 0~7，数字越小 IO 优先级越高
   - Realtime：最高磁盘优先级，会抢占所有其他 IO，极易把系统 IO 打满；仅 root 用户能使用
+  - none：
 
 
 ```sh
@@ -550,6 +553,12 @@ grep -r
 
 以实际命令来学习
 ```sh
+
+ps aux | grep -- -bash
+# 注意，这条 grep 命令和 grep '-bash' 并不等价
+# 必须使用 -- ，因为单引号是 shell 的语法，grep 接收到的还是 -bash，依旧会将其识别为参数。
+
+
 cat /proc/meminfo | grep -w -e Buffers -e Cached -e SReclaimable
 grep -wi -e Buffers -e Cached -e SReclaimable /proc/meminfo
 # 从文件 /proc/meminfo 中读取出 Buffers + Cached + SReclaimable 的值
@@ -802,3 +811,4 @@ MiB Swap:    0.0 total,    0.0 free,    0.0 used.  1170.2 avail Mem
 [util-linux]: https://github.com/util-linux/util-linux/tree/master
 [GNU coreutils]: https://github.com/coreutils/coreutils
 [《Rethinking PID 1》]: https://0pointer.de/blog/projects/systemd.html
+[POSIX 规范]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
