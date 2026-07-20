@@ -156,7 +156,35 @@ TTY = Teletype / Teletypewriter 电传打字机。早年计算机没有显示器
 
 GNU Core Utilities（通常简称为 coreutils）是 GNU 操作系统项目中的一个核心软件包，它包含了在类 Unix 操作系统中最基础、最常用的文件和 Shell 操作工具。目前有100多个命令。
 
-常见的 ls cat cp mv rm rmdir pwd echo touch date df tail head sort uniq wc whoami hostname chmod chown kill id who test dir users groups 命令都是属于这个软件包的
+下面这些常见的命令都是属于这个软件包的：
+- ls
+- cat
+- cp
+- mv
+- rm
+- rmdir
+- pwd
+- echo
+- touch
+- date
+- df
+- tail
+- head
+- sort
+- uniq
+- wc
+- whoami
+- hostname
+- chmod
+- chown
+- kill
+- id
+- who
+- test
+- dir
+- users
+- groups
+- tee 从标准输入读取并写入标准输出和文件
 
 ```sh
 ls -ahlsv
@@ -200,8 +228,15 @@ AI 分类：
   - Realtime：最高磁盘优先级，会抢占所有其他 IO，极易把系统 IO 打满；仅 root 用户能使用
   - none：
 
+注意：主流调度器 mq-deadline/kyber（blk-mq 多队列）不支持 class 分级调度，就算设置了 ionice -c 也没用。
+可以先查看一下调度器是什么类型。
+
+可以尝试使用 cgroup v2 中的 io.weight 或者 systemd 中的 IOWeight 进行替代。
 
 ```sh
+cat /sys/block/vda/queue/scheduler
+# ？？？
+
 ionice
 # 配置 io 作业的优先级
 
@@ -506,6 +541,16 @@ pkill -9 -u k
 
 ## 其他常用单软件
 
+### [xx]stat
+
+iostat
+pidstat
+mpstat
+tapestat
+cifsiostat
+
+vmstat: procps-ng?
+
 ### locale
 
 ### man / whatis
@@ -757,7 +802,7 @@ Tasks: 138 total,   1 running, 137 sleeping,   0 stopped,   0 zombie
 - `sy` system：内核态CPU占用（系统内核、驱动调用开销）
 - `ni` nice：调整过优先级的用户进程CPU占比
 - `id` idle：空闲CPU（这里90.5%，CPU非常闲）
-- `wa` iowait：等待磁盘IO的CPU（数值高代表磁盘瓶颈）
+- `wa` iowait：CPU 空闲但在等待磁盘 IO 的时间占比（数值高代表磁盘瓶颈）
 - `hi` hardware irq：硬件中断消耗CPU
 - `si` software irq：软中断消耗CPU（网络收发高时会上涨）
 - `st` steal：被虚拟化宿主机抢占走的CPU（物理机永远0，云虚拟机才会有数值）

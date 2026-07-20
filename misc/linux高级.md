@@ -102,8 +102,25 @@ oom 取值区间固定：-1000 ~ 1000，默认值全部为 0，表示完全按�
 指定为 -1000 表示豁免，但也仅屏蔽系统全局 OOM Killer，如果是 cgroup 内存限制触发的容器内部 OOM，该参数不生效。
 可以直接使用 `echo -1000` 或者 `choom` 命令人工调节偏移量。
 
+- sched
+- wchan
+
 ### /proc/zoneinfo 和 [/proc/meminfo]
 
+### /proc/pressure/
+
+/proc/pressure/ 是 [PSI（Pressure Stall Information）] 虚拟目录，用来统计进程因资源不足而停滞等待的耗时占比，简单地说就是用来查看过去一段时间，进程因为缺 CPU / 内存 / IO 白白等待了百分之多少的时间。
+
+该目录里面有三个文件 cpu、memory，io。每个文件的格式是一样的，有下面字段：
+- some：至少有 1 个任务因该资源阻塞的时间占比（轻度压力）
+- full：所有非空闲任务同时阻塞，CPU 空转、系统剧烈颠簸的严重压力
+  - 系统级 CPU 的 full 指标无实际意义（不存在 CPU 空等 CPU 的情况），所以内核统一置 0 做兼容
+- avg10/avg60/avg300：近 10/60/300 秒平均阻塞占比，最大值100
+- total：系统启动至今累计阻塞总微秒数
+
+开启 cgroup v2 后，每个 cgroup 目录（/sys/fs/cgroup）下会存在 cpu.pressure / memory.pressure / io.pressure 文件。
+
+三个压力文件还支持写入配置触发器阈值，写入和读取之间互不影响。
 
 
 ### [/proc/sys/vm]
@@ -290,3 +307,4 @@ laptop_mode
 [/proc/sys/vm]: https://docs.kernel.org/admin-guide/sysctl/vm.html
 [博客VmAdminReserveNotEnough]: https://utcc.utoronto.ca/~cks/space/blog/linux/VmAdminReserveNotEnough
 [cgroup v1 和 v2 版本对比]: https://docs.kernel.org/admin-guide/cgroup-v2.html#issues-with-v1-and-rationales-for-v2
+[PSI（Pressure Stall Information）]: https://docs.kernel.org/accounting/psi.html
