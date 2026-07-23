@@ -1,6 +1,20 @@
 # OOM、oom Killer、NUMA、D-Bus 通信标准
 
 专门写篇文章介绍一下
+## misc
+
+
+【AI】“磁盘硬件 IO 一旦下发，内核无法中途强行暂停 / 取消”底层原理：
+Linux 块设备层 → 磁盘硬件（SSD/HDD）存在明确边界：
+1. 内核下发 IO 请求到硬件队列（blk-mq 硬件提交阶段）
+  当内核把bio请求提交给 SSD 硬件队列（通过 NVMe/SCSI 指令发送给磁盘控制器）；
+2. 磁盘硬件独立执行 IO，CPU / 操作系统失去控制权
+  SSD 固件拿到 IO 指令后，自主处理读写；现代 NVMe SSD 拥有独立处理器、缓存。
+  👉 CPU 内核没有任何机制，可以发送指令让磁盘「立刻放弃正在执行的 IO」。
+  磁盘硬件规范（NVMe、SATA、SCSI）只支持：
+    取消还在软件队列、尚未下发硬件的 IO；
+    不支持中断一块已经正在执行的物理 IO 操作。
+
 # linux 高级
 
 linux 高级，只记录 linux 内核相关的。
@@ -17,7 +31,20 @@ linux 高级，只记录 linux 内核相关的。
 
 ## 内核、进程
 
-- D状态不可中断的睡眠状态，使用 kill -9 也无法杀死。因为强制 kill 也只是给进程发送一个 SIGKILL 信号。当进程处于D状态时，无法处理任何信号，包括 SIGKILL，所以进程无法终止。
+内核状态：
+- D状态：不可中断的睡眠状态，使用 kill -9 也无法杀死。因为强制 kill 也只是给进程发送一个 SIGKILL 信号。当进程处于D状态时，无法处理任何信号，包括 SIGKILL，所以进程无法终止。
+  - D 状态只代表：进程在等待 IO 结果，分两种场景：
+    - 场景 A：IO 正在 SSD 硬件上执行（硬件队列中）；
+    - 场景 B：IO 还堵在内核软件队列排队，还没轮到下发给磁盘硬件；
+
+注意，STAT 字段代表的是内核状态+修饰标记，修饰标记有：
+- `+` 进程属于前台进程组
+- `s`	session leader（会话首进程）
+- `l`	多线程进程
+- `<`	高优先级
+- `N`	低优先级
+
+
 
 ### [cgroup v2]
 
@@ -46,6 +73,8 @@ echo xxx > /sys/fs/cgroup/xxx子组/控制文件
 # 同步（阻塞）修改配置
 ```
 
+【AI】cgroup v2 定义四类标准文件格式：单行值、空格多值、flat-keyed、nested-keyed
+
 #### [cgroup 内存管理]
 
 cgroup 内存管理中，
@@ -57,13 +86,109 @@ cgroup 内存管理中，
 - memory.low：相比 min 更宽松，系统压力过大时会回收该 cgroup 的内存；
 - memory.max：硬上限，当 cgroup 占用内存触及硬上限，并且没有可以回收的内存时，触发 OOM。
 - memory.high：相比 max 更宽松，可以超出 high 值而不是直接触发 oom，但超限后 cgroup 内进程会被节流限流，同时承受高强度内存回收压力；
+-
+- 配置时最好是软硬一起搭配，比如同时配置 max 和 high，这样当内存达到 high 时，就会启动内存回收，而不是达到 max 才开始疯狂回收。一个不太准确但很形象的比喻就是，把水桶大小看作 max，前期加水可以疯狂加（疯狂申请内存），但快满了的时候（达到high），加水速度就应该慢下来，这样才更容易控制水不会溢出。
+-
 - 注意，max 和 high 有两种编辑方式：O_WRONLY（阻塞式/同步）和 O_NONBLOCK（非阻塞式/异步）。
 - 使用命令行的编辑都是同步，同步修改后会进行同步回收、oom等操作。
 - 通过编程语言可以传递 O_NONBLOCK 进行异步修改，异步修改会跳过同步回收、OOM 触发逻辑，延迟到下一次内存分配时处理。这个“延迟到下一次内存分配时再处理”意味着风险，如果业务侧持续疯狂申请、刷写内存，不触发新内存分配，那么内存占用将长时间高于 high/max。
 
 #### [cgroup IO管理]
 
-IO 控制器支持两种资源管控模型：一是按权重比例分配 IO 资源（只有在）；二是设置硬上限限制，上限可选择限制带宽或 IOPS
+IO 控制器用于管控 IO 资源分配，同时支持两种调度模型：
+- 基于权重（weight） 分配 IO 资源，仅在使用 cfq-iosched 调度器时生效
+- 基于带宽或 IOPS 上限的绝对限制分配方式。
+注意：blk-mq（多队列块设备）两种模型都不支持
+
+常规 IO 配置项：
+- io.stat 只读、嵌套键值格式文件
+  - 统计当前 cgroup 及其子树所有 IO 设备的读写指标
+  - rbytes：已读取字节总数
+  - wbytes：已写入字节总数
+  - rios：读 IO 请求次数
+  - wios：写 IO 请求次数
+  - dbytes：Discard 操作丢弃的字节（TRIM / 丢弃字节）
+  - dios：Discard 操作请求次数（TRIM / 丢弃 IO 次数）
+- io.weight
+  - 取值范围 1 到 10000 ，默认 100
+  - 只在兄弟节点之间生效。
+  - 取值代表的不是绝对值，而是竞争时的分配比例，设备不饱和时不生效。
+  - 分配的是设备耗时，而不是单纯的流量，毕竟随机和顺序IO差距很大。
+- io.max
+  - 用来限制一个 cgroup 对指定块设备能使用的最大 IO，具体支持四个限制：
+  - rbps 每秒最大读字节数，限流读流量带宽。
+  - wbps 每秒最大写字节数，限流写流量带宽。
+  - riops 每秒最大读 IO 次数，限制读 IOPS。
+  - wiops 每秒最大写 IO 次数，限制写 IOPS。
+- io.pressure
+  - 只读，用于查看 IO 阻塞情况。详情请查看 [PSI（Pressure Stall Information）]
+
+##### IO cost model
+
+IO cost model 是基于控制器 CONFIG_BLK_CGROUP_IOCOST 的。已经实现了 io.weight 的配置。有关 IO 的配置管理，也是一个很深的话题，IO 开销模型是最近才出的，详细可以从这篇博客[Improving performance with SCHED_EXT and IOCost] 和论文 [IOCost: Block Input–Output Control for Containers in Datacenters] 去扩展了解。
+
+【AI】CONFIG_BLK_CGROUP_IOCOST 是内核编译选项（.config 配置项），控制是否编译、启用 blk-iocost IO 成本控制器。。有三个值：
+- y：编译进内核，永久启用；
+- m：编译为可加载内核模块；
+- n：完全不编译，无 iocost 相关功能。
+CONFIG_BLK_CGROUP_IOCOST 依赖前置开关 CONFIG_BLK_CGROUP，只有开启基础 blk cgroup 后，CONFIG_BLK_CGROUP_IOCOST 才能生效。
+绝大多数发行版会把内核配置文件放在 `/boot/config-$(uname -r)`，所以可以通过 `cat /boot/config-$(uname -r) | grep CONFIG_BLK_CGROUP_IOCOST` 查看内核是否启用了 iocost
+
+- io.cost.qos 该文件用来配置 IO cost model 的 QoS（服务质量）
+  - 仅在根 cgroup 下存在（/sys/fs/cgroup/io.cost.qos）
+  - 可配置参数有：
+  - enable：控制器开关，默认关闭，设置为 1 开启；
+  - ctrl：管控模式，有 auto 和 user 两种；
+  - rpct：读延迟百分位，取值 [0, 100]
+  - wpct：写延迟百分位，取值 [0, 100]
+  - rlat：、读延迟阈值
+  - wlat：写延迟阈值
+  - min：全局总 IO 吞吐缩放下限百分比，取值 [1, 10000]
+  - max：全局总 IO 吞吐缩放上限百分比，取值 [1, 10000]
+  - min 和 max 的基准值取决于 io.cost.model 测算的基准值，此值是内核评估的稳态标准负载，不是满速上限。
+  - rpct、wpct 默认为零，表示不配置，此时内核通过硬件队列深度、设备繁忙度、IO 完成耗时等内部指标，来判断磁盘是否饱和，然后动态调整总 IO 吞吐速率（范围在 min 和 max 参数之间）
+  - 配置 rpct/wpct, rlat/wlat 后，内核则根据配置的值（延迟阈值）来判断磁盘是否饱和。
+  - 举例：enable=1 ctrl=auto rpct=95 rlat=75000 wpct=95 wlat=150000 min=50 max=150
+    - enable=1 表示开启控制器，
+    - ctrl=auto 表示管控模式为自动，【AI】即内核全自动调整延迟 QoS 参数（io.cost.model 里的设备性能参数）
+    - rpct=95 rlat=75000 wpct=95 wlat=150000 表示，内核会对一段时间内磁盘所有 IO 请求完成的耗时进行排序，如果 95% 的读延迟大于 75ms 或者 95% 的写延迟大于 150ms 时，则判定这块磁盘依据饱和，发生拥塞，此时内核会自动压低 IO 下发速率，最低不低于基准值的 50%。反之，如果非饱和，则内核允许拉高 IO 下发速率，最高不超过基准值的 150%。
+  - 所以，设置的延迟阈值越低，QoS 表现越好，但代价是整体总带宽会下降（延迟优先，牺牲吞吐）；min 和 max 区间越窄，IO行为越贴合预设的资源开销模型，流量波动越可控。但盲目设置 min/max，会让磁盘整体吞吐能力大幅浪费，IO 资源管控质量变差——要么限制过松完全无管控，要么限制过紧造成不必要限速；
+  - min/max 非常适合管控负载波动剧烈、短时行为反差极大的硬件设备，典型例子是 SSD。固态硬盘这类负载忽高忽低、会短暂满载后长时间阻塞的设备，通过 min 设置最低资源保障、max 设置瞬时资源上限，可有效平稳管控其 IO 行为。
+- io.cost.model 该文件用来配置 IO cost model 的 cost model
+  - 仅在根 cgroup 下存在（/sys/fs/cgroup/io.cost.model）
+  - 可配置参数有：
+  - ctrl：auto 或 user
+  - model：使用的 cost 模型，目前是 linear 线性模型，后续可能加入其他模板，比如 bpf 自定义模型。目前线性模型定义了下面 6 个参数，当 ctrl=auto 时，下面的值由内核自动生成：
+    - [r|w]bps：限制顺序 IO 最大吞吐带宽
+    - [r|w]seqiops：限制 4KB 块大小的顺序读写，每秒最大 IO 请求数
+    - [r|w]randiops：限制 4KB 块大小的随机读写，每秒最大 IO 请求数
+
+##### IO latency
+
+[io.latency] 有两种限流方式（共存）：
+- 队列深度节流。【AI】队列深度节流的本质，是限制该 cgroup同时持有的 outstanding IO 最大数量。outstanding IO 指的是已经发给磁盘、还没处理完、等待返回结果的 IO 请求。
+- 人工延迟诱导。【AI】swap 交换 IO、文件元数据 IO（目录更新、inode、日志元刷盘、内存换页），这类 IO 不能用队列深度节流 —— 如果限制这类IO，会导致内存回收、文件系统元同步阻塞，反过来拖慢高优先级业务，引发更大故障。所以内核策略不限制这类 IO 的队列深度；但会记账延迟成本，用进程级人工延时惩罚该 cgroup。
+
+【AI】人工延迟诱导需要好好理解一下：swap 和元数据 IO 不能直接拦截限流，否则会拖累高优先级业务；所以内核允许这类 IO 正常跑，但把拥堵成本记在发起 IO 的 cgroup 头上，通过给该 cgroup 所有进程强制休眠延时的方式间接惩罚、压低该组整体负载。
+完整流程：
+1. 磁盘拥堵，高优先级 cgroup 延迟超标，进入节流状态；
+2. 普通用户 cgroup 产生大量 swap / 元数据 IO，这些 IO 正常跑，占磁盘带宽；
+3. 每一笔这类 IO，都会给这个 cgroup 累计一笔延迟惩罚额度（单位微秒，存在 io.stat 的delay字段）；
+4. 只要这个 cgroup 里的进程执行任何系统调用、读写、计算时，内核会主动挂起进程，强制休眠对应累计的微秒，再放行进程；
+举个直观例子：
+普通用户大量 swap，累计 delay=500000us（0.5 秒）。用户进程执行read()读文件，内核先让进程休眠 500ms，再执行真正的 IO 读写。
+如果大量 swap 风暴，累计惩罚延迟会无限膨胀，进程每次调用都休眠十几秒，系统直接卡死。所以内核限制：单次进程休眠最多 1 秒，不会出现单次休眠数秒的极端情况。
+具体可以从 io.stat 查看到 use_delay 和 delay 增加。
+
+开启 IO latency 后，有两个相关配置
+- io.latency
+- io.stat 开启后，再 io.stat 中会多出三个字段：
+  - depth 当前 cgroup 的队列深度
+  - avg_lat
+  - win
+
+---
+
 
 io-interface-files：基础限流、权重、监控（最核心）
 writeback：缓冲写脏页 IO 专项管控（内存 + IO 联动）
@@ -82,14 +207,12 @@ io-priority：全局批量调整进程 IO 抢占优先级
   - some：部分进程等待 IO 的时长；
   - full：组内所有进程都卡在 IO 等待（大量 D 进程时该数值持续上涨）；只要 full 数值持续走高，就说明全盘扫描的读 IO 把磁盘打满，进程无法获取 IO 资源进入 D 状态。
 
-- io.max 硬限制读带宽 / 读 IOPS
-- io.weight 权重分配（多业务共享磁盘场景）。前提：磁盘调度器切换为 bfq
 - io.latency 给核心业务 cgroup 设置延迟目标，磁盘拥塞时内核自动节流扫描任务 cgroup，优先保障核心业务 IO 延迟。逻辑：当扫描任务把磁盘打满、业务 IO 延迟超过 75ms，内核主动限制扫描 cgroup 的并发 IO 数量，降低扫描抢占，业务进程不会进入 D 状态。
 - io.prio.class 把全盘扫描的 cgroup 所有进程 IO 优先级改为最低 IDLE，只有磁盘完全空闲时才允许扫描读 IO，完全不抢占业务 IO。
 
 ```sh
-cat /sys/block/[xx]/queue/scheduler
-# 查看当前支持的调度器，默认 mq-deadline
+cat /sys/block/vda/queue/scheduler
+# 查看指定硬盘当前支持的调度器，我的默认输出 [mq-deadline] none
 ```
 
 ### `/proc/[pid]`
@@ -308,3 +431,6 @@ laptop_mode
 [博客VmAdminReserveNotEnough]: https://utcc.utoronto.ca/~cks/space/blog/linux/VmAdminReserveNotEnough
 [cgroup v1 和 v2 版本对比]: https://docs.kernel.org/admin-guide/cgroup-v2.html#issues-with-v1-and-rationales-for-v2
 [PSI（Pressure Stall Information）]: https://docs.kernel.org/accounting/psi.html
+[io.latency]: https://docs.kernel.org/admin-guide/cgroup-v2.html#how-io-latency-throttling-works
+[Improving performance with SCHED_EXT and IOCost]: https://lwn.net/Articles/966618/
+[IOCost: Block Input–Output Control for Containers in Datacenters]: https://www.cs.cmu.edu/~dskarlat/publications/top_iocost.pdf

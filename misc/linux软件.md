@@ -1,3 +1,28 @@
+### fio 磁盘测速软件
+
+```sh
+fio -name=seq-r -rw=read -bs=1M -size=100M -direct=1 -numjobs=1 -filename=/tmp/fio_test
+fio -name=rand-r-4k -rw=randread -bs=4k -size=100M -direct=1 -numjobs=1 -filename=/tmp/fio_test
+```
+
+```sh
+#!/bin/bash
+TEST_FILE=/tmp/fio_test
+SIZE=1G
+
+echo "===== 顺序写 1M ====="
+fio -name=seq-w -rw=write -bs=1M -size=$SIZE -direct=1 -numjobs=1 -filename=$TEST_FILE
+echo -e "\n===== 顺序读 1M ====="
+fio -name=seq-r -rw=read -bs=1M -size=$SIZE -direct=1 -numjobs=1 -filename=$TEST_FILE
+echo -e "\n===== 4K随机写 ====="
+fio -name=rand-w-4k -rw=randwrite -bs=4k -size=$SIZE -direct=1 -numjobs=1 -filename=$TEST_FILE
+echo -e "\n===== 4K随机读 ====="
+fio -name=rand-r-4k -rw=randread -bs=4k -size=$SIZE -direct=1 -numjobs=1 -filename=$TEST_FILE
+
+rm -f $TEST_FILE
+echo "测试完成，临时文件已清理"
+```
+
 ### stress-ng 手搓内存占用
 
 压测工具

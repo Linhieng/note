@@ -73,6 +73,7 @@ Linux中一切皆文件
   - /var/run/utmp
 - /sys
   - /sys/block
+    - /sys/block/vda/queue/nr_requests ？？？
   - /sys/fs/cgroup/
 
 #### /etc/ssh/sshd_config

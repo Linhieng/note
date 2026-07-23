@@ -900,17 +900,6 @@ node:internal/modules/esm/load:209
 Error [ERR_UNSUPPORTED_ESM_URL_SCHEME]: Only URLs with a scheme in: file, data, and node are supported by the default ESM loader. On Windows, absolute paths must be valid file:// URLs. Received protocol 'd:'
 ```
 
-## 复习：ESM 中获取 `__dirname`
-
-```js
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-console.log(__dirname)
-```
 
 ## 在 word 中使用 vba 为指定命令分配快捷键
 

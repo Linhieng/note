@@ -10,8 +10,8 @@ linux 内核，是纯底层管理程序，无内置命令、无脚本解释器�
 
 ## 命令常识
 
-- [POSIX 规范]：跨 Unix（Linux/macOS/BSD/AIX）通用标准，所有合规程序必须遵守，写脚本、跨平台工具必须优先遵循；
-- GNU 扩展规范：Linux 上 coreutils/procps/util-linux 等工具独有，macOS/BSD 不一定支持，仅 Linux 日常使用、本地脚本可用。
+- [POSIX.1-2017]：POSIX 规范，跨 Unix（Linux/macOS/BSD/AIX）通用标准，所有合规程序必须遵守，写脚本、跨平台工具必须优先遵循；
+- GNU 扩展规范：Linux 上 coreutils / util-linux / procps 等工具独有，macOS/BSD 不一定支持，仅 Linux 日常使用、本地脚本可用。
 
 常见 POSIX 规范
 - 短选项 `-` 后面只跟单个英文字母，比如 `-v`
@@ -48,7 +48,33 @@ POSIX 要求预装的命令有？
 - 系统调试工具 strace lsof tcpdump
 
 ## 未整理
+
 ```sh
+grep PREEMPT /boot/config-$(uname -r)
+# 很多阿里云 / 腾讯云轻量虚拟机，默认内核抢占模型：voluntary（自愿抢占）
+# 低负载场景下，内核长时间不触发任务抢占，休眠进程唤醒延迟显著。
+# 核查抢占模式：
+# CONFIG_PREEMPT_VOLUNTARY：自愿抢占（容易出现唤醒延迟，云主机通病）
+# CONFIG_PREEMPT：完全抢占，交互响应更好（桌面 / 交互式服务器推荐）
+
+cat /proc/softirqs
+# 观察软中断分布
+
+ps -eLo pid,stat,wchan | sort -k4
+# 观察进程等待通道，看大量进程卡在何处
+
+strace -p 882 -tt -s 256
+# 持续附加跟踪主 sshd PID：882
+
+ss -ntp | grep :22
+# 进程中有两个，代表父子进程
+pstree -p | grep sshd
+# 可以通过该命令查看，确定确实是父子进程
+
+lshw
+# 属于 $Rev$ 是啥？
+
+
 dpkg -S $(which ionice)
 # ubuntu/Debian 中查看 ionice 命令归属哪个软件
 dpkg -S $(which df)
@@ -167,7 +193,9 @@ GNU Core Utilities（通常简称为 coreutils）是 GNU 操作系统项目中�
 - echo
 - touch
 - date
-- df
+- df 查看磁盘空间使用情况
+- du 查看文件/目录大小
+- dd 转换和复制文件
 - tail
 - head
 - sort
@@ -203,6 +231,9 @@ stat -f /run
 
 df -h
 # 查看服务器磁盘分区的整体使用情况，包含总容量、已用、剩余、挂载点、使用率
+du -h --max-depth=1
+# 当前目录下各文件夹大小
+
 ```
 
 
@@ -211,7 +242,7 @@ df -h
 [util-linux] 是 Linux 内核组织维护的一套 Linux 专用工具集。含有很多命令，这些命令的官方手册，就是 man 手册。
 
 AI 分类：
-- 磁盘 / 分区管理：fdisk、cfdisk、sfdisk、lsblk、blkid、wipefs、swapon/mkswap、fstrim、blkdiscard、partx
+- 磁盘 / 分区管理：cfdisk、sfdisk、wipefs、swapon/mkswap、fstrim、blkdiscard、partx
 - 硬件 / 系统信息：lscpu、lsirq、lsmem、hwclock、rtcwake、rfkill、zramctl
 - 挂载与文件系统：mount、umount、findmnt、fsck 系列、fallocate、fsfreeze
 - 用户 / 登录管理：su、runuser、vipw、chsh、last、lastlog2、login、newgrp
@@ -219,6 +250,18 @@ AI 分类：
 - 日志与系统输出：dmesg、logger、hexdump、wall、write
 - 通用运维工具：cal、more、script、uuidgen、whereis、column、flock
 
+- 磁盘 / 分区管理
+  - lsblk 列出块设备
+  - blkid 查看块设备属性
+  - fdisk 管理磁盘分区表
+
+- 进程 / 资源调度
+  - ionice 读写进程的 IO 调度类和优先级
+
+```sh
+lsblk -f
+#
+```
 
 ### ionice
 
@@ -272,7 +315,7 @@ systemd 以三种不同的 unit 类型暴露了底层内核 cgroups 功能。
 - .scope 和 service 单元类似，但区别在于此类单元封装的进程由某个不相关的管理进程派生。与 service 不同，scope 只能通过编程方式声明和启动，即始终是临时的。
 - .slice 切片单元，该单元类型不直接包含任何进程，它始终作为 cgroup 树中的内部节点（ service 和 scope 始终是 cgroup 树中的叶子节点）。它的命名直接对应 cgroup 树路径。通过命令 `ls /sys/fs/cgroup/ | grep slice` 查看
 
-systemd 默认会创建四个切片单元：
+[systemd 默认会创建四个切片单元]：
 - -.slice 是根切片，即所有其他切片的父级，直接映射到 cgroup v2 的顶级目录
 - system.slice 系统服务的默认存放位置（systemd --system）
 - user.slice 放置用户会话（所有用户，包括 root），每个用户在下面会有自己的切片
@@ -324,8 +367,42 @@ systemctl revert xxx.slice
 systemctl list-units --type=service,slice,scope
 # 列出所有 slice、scope、service
 ```
+#### systemctl
 
-#### 切片
+添加 `--runtime` 参数代表仅写入临时内存配置目录 /run/systemd/system.control/user-0.slice.d/，不会持久化到 /etc，方便测试。
+
+
+```sh
+systemctl cat user.slice
+# 查看 user.slice 所有配置（包括 drop-in 来源路径）
+systemctl show user.slice
+# 查看合并后最终生效的配置信息
+
+systemctl daemon-reload
+# 修改单元文件或drp-in 后，需要重启守护进程才生效。
+# set-property 不需要重启，因为它利用 DBus 运行时即时生效
+# systemctl edit 也不需要，因为它在保存配置后会自动调用。
+
+
+systemctl set-property --runtime user.slice MemoryMax=1.5G MemorySwapMax=0
+# 配置所有用户最大内存占用，包括root用户
+systemctl set-property --runtime user-0.slice MemoryMin=200M
+# 然后再单独为 root 用户配置最小内存占用（不配置不行，VNC同样会无法登录）
+# 那只配置 root 的最小内存呢？测试了，不行，普通用户依旧可以占满内存。
+systemctl show user.slice | grep Memory
+# 查看配置情况
+
+
+systemctl set-property --runtime user-0.slice MemoryMin=
+# 想要恢复默认值，可以直接留空
+systemctl revert user-0.slice
+# 或者直接使用 revert，它会删除该 slice 所有 drop-in 覆盖文件（包含 /run 下 --runtime 生成的临时配置、/etc 持久配置）
+
+systemctl set-property --runtime system.slice MemoryMin=50M
+systemctl revert system.slice
+```
+
+#### [systemd slice]
 
 <!-- 前面的配置是不合理的，
 user@.slice 是 systemd 模板单元，所有 UID≥1000 的普通用户会话自动生成 user-$UID.slice，可通过模板 drop-in 批量限制，不会作用于 UID=0 的 user-0.slice。
@@ -336,7 +413,9 @@ systemd 切片专属命名规则是短横线`-`表达层级父子关系，比如
 
 
 - `user.slice` 是父切片，限制所有用户进程总和，不存在所有优先级问题。
-- `user-.slice` 是模板前缀，代表每位用户的默认设置，优先级低于实例 user-xx.slice。并且该模板只能手动创建文件（直接就是永久生效）
+- `user-.slice` 是 [slice 模板]，代表每位用户的默认设置。
+  - 比如，/etc/systemd/system/user-.slice.d/ 目录下的 *.conf 文件中的配置会被所有 user-PID.slice 所引用。
+  - 在 /etc/systemd/system/ 下的配置属于手动配置，通过 set-property 修改的配置是 DBus 运行时持久化接口，它固定输出到 /etc/systemd/system.control，而且后者是新版本 systemd 才有的特性。有关配置文件的优先级，可以查看 [systemd.unit 文档]
 
 登录时用 PAM + systemd 模板 user@.service 区分 UID，只对 UID≥1000 加载限制
 单独为 root 创建 slice，开机时自动将 root 从 user.slice 中移除。
@@ -379,11 +458,11 @@ systemctl list-units --type=scope
 #### IO 封装
 
 IOAccounting=：开启 IO 统计
-IOWeight=：IO 调度权重
+IOWeight=：IO 调度权重。（需要 % util 持续≈100% 才生效？）
 IODeviceWeight=：单块磁盘 IO 权重
 IOReadBandwidthMax=：读带宽上限
 IOWriteBandwidthMax=：写带宽上限
-IOReadIOPSMax=：读 IOPS 上限
+IOReadIOPSMax=：读 IOPS 上限（限制 4k）为何普通用户没有这个选项，但又确实存在？
 IOWriteIOPSMax=：写 IOPS 上限
 IODeviceLatencyTargetSec=：设备 IO 延迟目标
 
@@ -395,29 +474,7 @@ IOPressureWatch=
 IOSchedulingClass=
 IOSchedulingPriority=
 
-#### systemctl
 
-添加 `--runtime` 参数代表仅写入临时内存配置目录 /run/systemd/system.control/user-0.slice.d/，不会持久化到 /etc，方便测试。
-
-
-```sh
-systemctl set-property --runtime user.slice MemoryMax=1.5G MemorySwapMax=0
-# 配置所有用户最大内存占用，包括root用户
-systemctl set-property --runtime user-0.slice MemoryMin=200M
-# 然后再单独为 root 用户配置最小内存占用（不配置不行，VNC同样会无法登录）
-# 那只配置 root 的最小内存呢？测试了，不行，普通用户依旧可以占满内存。
-systemctl show user.slice | grep Memory
-# 查看配置情况
-
-
-systemctl set-property --runtime user-0.slice MemoryMin=
-# 想要恢复默认值，可以直接留空
-systemctl revert user-0.slice
-# 或者直接使用 revert，它会删除该 slice 所有 drop-in 覆盖文件（包含 /run 下 --runtime 生成的临时配置、/etc 持久配置）
-
-systemctl set-property --runtime system.slice MemoryMin=50M
-systemctl revert system.slice
-```
 
 ## shadow-utils
 
@@ -541,6 +598,9 @@ pkill -9 -u k
 
 ## 其他常用单软件
 
+- hdparm
+- locale
+
 ### [xx]stat
 
 iostat
@@ -551,7 +611,6 @@ cifsiostat
 
 vmstat: procps-ng?
 
-### locale
 
 ### man / whatis
 
@@ -856,4 +915,8 @@ MiB Swap:    0.0 total,    0.0 free,    0.0 used.  1170.2 avail Mem
 [util-linux]: https://github.com/util-linux/util-linux/tree/master
 [GNU coreutils]: https://github.com/coreutils/coreutils
 [《Rethinking PID 1》]: https://0pointer.de/blog/projects/systemd.html
-[POSIX 规范]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
+[POSIX.1-2017]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/contents.html
+[slice 模板]: https://www.freedesktop.org/software/systemd/man/latest/user@.service.html#Controlling%20resources%20for%20logged-in%20users
+[systemd slice]: https://www.freedesktop.org/software/systemd/man/latest/systemd.slice.html#
+[systemd 默认会创建四个切片单元]: https://www.freedesktop.org/software/systemd/man/latest/systemd.slice.html#
+[systemd.unit 文档]: https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html#

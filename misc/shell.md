@@ -1,3 +1,5 @@
+(Get-NetTCPConnection | Where-Object State -eq Established).Count
+
 ### 查找命令路径
 
 ```sh
