@@ -304,6 +304,22 @@ systemd 具备强大的并行处理能力，采用套接字（socket）和 D-Bus
 
 ```sh
 systemd --version
+
+systemd-cgtop --depth 1 -p -d 0.1
+# 按照 cgroup 查看各组性能情况 Task、CPU、Memory、IO
+# --depth 1 表示只查看一个层级，即 user.slice，system.slice。为 0 表示只查看根，默认 3
+# -p 是 --order=path 的简写，按照 path 排序，这样不容易上下行切换
+# -d 0.1 刷新频率 0.1s
+
+systemd-cgls -u user.slice
+# 打印完整 cgroup 层级树，
+# -u user.slice 只看用户切片
+
+systemd-run
+# 操作 transient unit
+
+systemctl
+# 操作 cgroup 下的 slice / service / scope
 ```
 
 ### systemd cgroup ^[1]^ ^[2]^
@@ -333,23 +349,20 @@ systemd 以三种不同的 unit 类型暴露了底层内核 cgroups 功能。
 │  │  └─ app.service      # 用户级后台服务
 └─ machine.slice  # 容器/虚拟机总切片
    └─ xx.scope
+
+/sys/fs/cgroup/cgroup.subtree_control
+这个文件可以查看 cgroup 开启的控制器？？？
+
+
+【AI】systemd 的 unit 配置是否只针对子 cgroup？对于根 cgroup 的配置项，systemd 没有提供接口，而是需要自己直接编辑文件？直接操作 cgroup？是吗？
+
 ```
 
+#### systemctl
+
+添加 `--runtime` 参数代表仅写入临时内存配置目录 /run/systemd/system.control/user-0.slice.d/，不会持久化到 /etc，方便测试。
 
 ```sh
-systemctl
-# 操作 slice / service / scope
-systemd-run
-# 操作 transient unit
-systemd-cgls
-# 打印完整 cgroup 层级树
-systemd-cgtop
-# 实时监控各 cgroup CPU / 内存负载
-
-systemd-cgls -u user.slice
-# 打印完整 cgroup 层级树，只看用户会话
-
-
 systemctl show xxx.slice
 # 查看配置，具体是在查看 /sys/fs/cgroup/xxx.slice/ 文件下的相关文件。
 systemctl show system.slice -p MemoryCurrent
@@ -357,20 +370,23 @@ systemctl show system.slice -p MemoryCurrent
 systemctl show user-0.slice -p MemoryCurrent
 # 是在读取 cat /sys/fs/cgroup/user.slice/user-0.slice/memory.current
 # 这两个命令，不能通过 /sys/fs/cgroup/user.slice/memory.current; systemctl show user.slice -p MemoryCurrent; 来查看，因为有误差，而且这个误差始终是 systemctl 查看的值会大一点。
+systemctl show system.slice -p IOWeight
+cat /sys/fs/cgroup/system.slice/io.weight
+# 直接查看具体，和 show 的区别在于？？？？？
 
 
 systemctl set-property --runtime 子组和配置
 # 修改配置，写入 /run 目录，重启失效
+systemctl set-property 子组和配置
+# 修改配置，？？？
 systemctl revert xxx.slice
 # 重置配置
+systemctl edit system.slice
+# 编辑 drop-in 配置，这个和 set-property 的关系是什么呢？
 
 systemctl list-units --type=service,slice,scope
 # 列出所有 slice、scope、service
 ```
-#### systemctl
-
-添加 `--runtime` 参数代表仅写入临时内存配置目录 /run/systemd/system.control/user-0.slice.d/，不会持久化到 /etc，方便测试。
-
 
 ```sh
 systemctl cat user.slice

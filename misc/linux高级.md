@@ -141,19 +141,30 @@ CONFIG_BLK_CGROUP_IOCOST 依赖前置开关 CONFIG_BLK_CGROUP，只有开启基�
   - ctrl：管控模式，有 auto 和 user 两种；
   - rpct：读延迟百分位，取值 [0, 100]
   - wpct：写延迟百分位，取值 [0, 100]
-  - rlat：、读延迟阈值
+  - rlat：读延迟阈值
   - wlat：写延迟阈值
   - min：全局总 IO 吞吐缩放下限百分比，取值 [1, 10000]
   - max：全局总 IO 吞吐缩放上限百分比，取值 [1, 10000]
-  - min 和 max 的基准值取决于 io.cost.model 测算的基准值，此值是内核评估的稳态标准负载，不是满速上限。
+  - 【AI】min 和 max 的基准值取决于 io.cost.model 测算的基准值，此值是内核评估的稳态标准负载，不是满速上限。
   - rpct、wpct 默认为零，表示不配置，此时内核通过硬件队列深度、设备繁忙度、IO 完成耗时等内部指标，来判断磁盘是否饱和，然后动态调整总 IO 吞吐速率（范围在 min 和 max 参数之间）
   - 配置 rpct/wpct, rlat/wlat 后，内核则根据配置的值（延迟阈值）来判断磁盘是否饱和。
-  - 举例：enable=1 ctrl=auto rpct=95 rlat=75000 wpct=95 wlat=150000 min=50 max=150
+  - 举例：enable=1 ctrl=user rpct=95 rlat=75000 wpct=95 wlat=150000 min=50 max=150
     - enable=1 表示开启控制器，
-    - ctrl=auto 表示管控模式为自动，【AI】即内核全自动调整延迟 QoS 参数（io.cost.model 里的设备性能参数）
+    - ctrl=user 表示管控模式为手动，因为后面手动指定了值，所以即使这里设置为 auto，最终的文件也会变成 ctrl=user。
     - rpct=95 rlat=75000 wpct=95 wlat=150000 表示，内核会对一段时间内磁盘所有 IO 请求完成的耗时进行排序，如果 95% 的读延迟大于 75ms 或者 95% 的写延迟大于 150ms 时，则判定这块磁盘依据饱和，发生拥塞，此时内核会自动压低 IO 下发速率，最低不低于基准值的 50%。反之，如果非饱和，则内核允许拉高 IO 下发速率，最高不超过基准值的 150%。
   - 所以，设置的延迟阈值越低，QoS 表现越好，但代价是整体总带宽会下降（延迟优先，牺牲吞吐）；min 和 max 区间越窄，IO行为越贴合预设的资源开销模型，流量波动越可控。但盲目设置 min/max，会让磁盘整体吞吐能力大幅浪费，IO 资源管控质量变差——要么限制过松完全无管控，要么限制过紧造成不必要限速；
   - min/max 非常适合管控负载波动剧烈、短时行为反差极大的硬件设备，典型例子是 SSD。固态硬盘这类负载忽高忽低、会短暂满载后长时间阻塞的设备，通过 min 设置最低资源保障、max 设置瞬时资源上限，可有效平稳管控其 IO 行为。
+  - 平时使用，直接用 auto 模式就可以了，其他的值由内核算法自行得出。
+
+这里要注意一下，我在官方文档引用原文然后让 AI 解释时，AI 完全解释错了，而且在我没有实践的情况下，完全无法知道 AI 说的对不对，知道实践后，才发现 AI 是错的。
+> [原文中的描述]是这样的： When “ctrl” is “auto”, the parameters are controlled by the kernel and may change automatically. Setting “ctrl” to “user” or setting any of the percentile and latency parameters puts it into “user” mode and disables the automatic changes. The automatic mode can be restored by setting “ctrl” to “auto”.
+>
+> AI 给的解释是 io.cost.qos/io.cost.model 中 ctrl 参数是共享的，手动和自动所修改的都是 io.cost.model 中的 [r|w]bps, [r|w]seqiops, [r|w]randiops 。但我实践后（执行 `echo "252:0 enable=1 ctrl=auto rpct=95.00 rlat=75000 wpct=95.00 wlat=150000 min=50.00 max=150.0" > /sys/fs/cgroup/io.cost.qos`），发现并不是这样，执行该命令后 qos 的 ctrl 会自动变成 user，于是问 AI 其为何两个文件的 ctrl 会不同时，AI 给的解释是缓存问题，让我重新读取一下……
+>
+> 其实最开始的时候，看到原文说“or setting any of the percentile and latency parameters”时，我就想过这个 ctrl 可能是控制 qos 的参数的，毕竟原文对参数的解释，也用到了 percentile 和 latency 两个单词，但因为我自认为英语比不上 AI，所以最终还是选择相信 AI 的，毕竟原文是使用 percentile 和 latency 两个单词来描述，而不是直接说 rpct/rlat/wpct/wlat 参数。而且
+>
+> 因为在官方文档中使用 AI 解读太过方便，太过顺利，让我下意识地认为只要给了依据，AI的答案就不会错，结果这次打脸了，所以有必要记录一下。
+
 - io.cost.model 该文件用来配置 IO cost model 的 cost model
   - 仅在根 cgroup 下存在（/sys/fs/cgroup/io.cost.model）
   - 可配置参数有：
@@ -434,3 +445,4 @@ laptop_mode
 [io.latency]: https://docs.kernel.org/admin-guide/cgroup-v2.html#how-io-latency-throttling-works
 [Improving performance with SCHED_EXT and IOCost]: https://lwn.net/Articles/966618/
 [IOCost: Block Input–Output Control for Containers in Datacenters]: https://www.cs.cmu.edu/~dskarlat/publications/top_iocost.pdf
+[原文中的描述]: https://docs.kernel.org/admin-guide/cgroup-v2.html
