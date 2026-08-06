@@ -3,10 +3,27 @@
 - 计算机的组成，了解各种设备的作用
 - Linux发展历史
 - 文件系统
+
 ## draft
 
 systemd 是什么，和 `systemctl` 和 `sysctl` 命令关系
 snap 软件包又是什么
+
+
+## 软件管理
+
+
+- Debian 系
+  - 软件包后缀 `.rpm`，使用 yum（centos7）或者 dnf（centos8+，yum升级），底层调用 rpm
+- RHEL 系
+  - 软件包后缀 `.deb`，使用 apt 管理，底层调用 dpkg
+
+
+```sh
+yum repolist all
+# 查看现有全部仓库
+
+```
 
 ## 区域语言
 
@@ -19,6 +36,13 @@ C 和 en_US 在字母方面排序是一样的，都是 AaBbCc…… 这样排序
 注意，对于数字 2 和 10，想要让 2 在 10 前面，需要的不是设置 locale，而是使用 ls 的 -v 参数。
 
 注意区分“区域语言”和所谓“字符集”的区别。中文显示乱码或无法输入中文，这是属于字符集的锅，和区域语言没关系。
+
+## 网络
+
+/sys/class/net 是系统内核网卡目录，里面每个文件夹对应一张网卡。其中 lo 文件夹就是本地环路
+/etc/netplan/ 是？
+/etc/network/ 是？
+
 
 
 ## 文件系统
@@ -56,6 +80,7 @@ C 和 en_US 在字母方面排序是一样的，都是 AaBbCc…… 这样排序
 Linux中一切皆文件
 
 - /dev 几乎所有硬件都在此目录下，比如硬盘、U盘、鼠标、键盘、虚拟设备等
+  - /dev/console  在 tty 中执行 cat /dev/console 后，似乎无法退出，只能通过 ctrl+alt+F2 这种方式切换登录然后 kill，但在 pts 中则可以 ctrl+c 退出。
 - /proc 内核虚拟文件系统，是内核驻留在内存的动态虚拟控制面板。可以查看系统实时资源、临时调整内核内存 / 网络等运行策略，关机后全部清空，不属于磁盘持久文件。使用 `ll /proc` 可以注意到 total 的值和实际的值相差甚远，大部分文件的大小都是 0，这是因为 ll 统计的是磁盘占用块的数量，而那些大小为 0 的实际上是在内存中的。
   - /proc/uptime 一行两个数字，第一个数字是开机后的总允许秒数，精确到毫秒。
   - /proc/pressure/ 是 PSI，用来统计进程因资源不足而停滞等待的耗时占比
@@ -67,6 +92,7 @@ Linux中一切皆文件
     - /proc/sys/fs/：文件系统参数（最大打开文件数等）
   - /proc/meminfo、/proc/cpuinfo、/proc/uptime：可用于读取整机全局硬件 / 资源状态，无修改能力。
 - /etc
+  - /etc/os-release
 - /run 运行时数据，挂载在内存，重启失效。所谓临时配置就是在这里
   - /run/systemd/system.control/user-0.slice.d/
 - /var

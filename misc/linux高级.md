@@ -1,8 +1,11 @@
 # OOM、oom Killer、NUMA、D-Bus 通信标准
 
 专门写篇文章介绍一下
+
 ## misc
 
+【AI】linux 中万物皆文件，指的是内核所有可读写、可使用文件描述符访问的对象，统一使用文件接口（open/read/write/ioctl/close）操作。
+皆文件的这个文件具体分为磁盘设备文件（普通文件）和内核虚拟对象（无磁盘实体，只有文件描述符 fd，比如匿名管道、ptmx、socket、eventfd、signalfd等）。
 
 【AI】“磁盘硬件 IO 一旦下发，内核无法中途强行暂停 / 取消”底层原理：
 Linux 块设备层 → 磁盘硬件（SSD/HDD）存在明确边界：
@@ -28,6 +31,10 @@ linux 高级，只记录 linux 内核相关的。
 - 权限安全：用户 / 组、文件权限、capability；
 - 系统调用：对外暴露统一接口，给用户态程序使用；
 - 中断、时钟、锁、内核模块等底层基础设施。
+
+## 设备 /dev
+
+参考 [linux dev]
 
 ## 内核、进程
 
@@ -111,7 +118,7 @@ IO 控制器用于管控 IO 资源分配，同时支持两种调度模型：
   - dios：Discard 操作请求次数（TRIM / 丢弃 IO 次数）
 - io.weight
   - 取值范围 1 到 10000 ，默认 100
-  - 只在兄弟节点之间生效。
+  - **只在兄弟节点之间生效**。
   - 取值代表的不是绝对值，而是竞争时的分配比例，设备不饱和时不生效。
   - 分配的是设备耗时，而不是单纯的流量，毕竟随机和顺序IO差距很大。
 - io.max
@@ -446,3 +453,4 @@ laptop_mode
 [Improving performance with SCHED_EXT and IOCost]: https://lwn.net/Articles/966618/
 [IOCost: Block Input–Output Control for Containers in Datacenters]: https://www.cs.cmu.edu/~dskarlat/publications/top_iocost.pdf
 [原文中的描述]: https://docs.kernel.org/admin-guide/cgroup-v2.html
+[linux dev]: https://www.kernel.org/doc/html/latest/admin-guide/devices.html

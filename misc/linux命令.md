@@ -7,6 +7,7 @@ linux 内核，是纯底层管理程序，无内置命令、无脚本解释器�
 `uname -r` 命令用于查看 linux 内核。
   - 只要输出的内核版本带 `-`，则说明使用的是分发版linux（比如Ubuntu等）。此时需要查看对应分发版linux的手册。
   - 如果是核心linux，输出内容只会有版本号。核心linux版本可以查看对应 [kernel release]
+  - 发行版都有 /etc/os-release 文件？
 
 ## 命令常识
 
@@ -28,7 +29,6 @@ linux 内核，是纯底层管理程序，无内置命令、无脚本解释器�
 POSIX 要求预装的命令有？
 - shell 解释器（必带）
 - GNU coreutils（核心基础工具集，重中之重）
-  - ls echo cat cp mv rm mkdir rmdir touch stat pwd whoami hostname uname date wc sort head tail tr cut basename dirname dd sync chmod chown
 - util-linux（磁盘、挂载、系统基础工具）
   - mount umount blkid lsblk dmesg hwclock fdisk losetup free fallocate
   - sysctl
@@ -49,7 +49,22 @@ POSIX 要求预装的命令有？
 
 ## 未整理
 
+
 ```sh
+# 和终端相关的 linux 命令
+who
+w
+whoami
+tty
+chvt
+last
+# 等等
+
+
+
+man ss
+# 为何没有显示软件包
+
 grep PREEMPT /boot/config-$(uname -r)
 # 很多阿里云 / 腾讯云轻量虚拟机，默认内核抢占模型：voluntary（自愿抢占）
 # 低负载场景下，内核长时间不触发任务抢占，休眠进程唤醒延迟显著。
@@ -164,11 +179,111 @@ ulimit -v
 lsof -p 6778
 # 查看进程打开日志文件
 
-systemd-cgtop
-# 实时监控所有 cgroup 内存
-
 systemctl status user-1000.slice
 ```
+
+
+## 虚拟内存相关命令
+```SH
+free -h
+# 查看内存情况，看看是否有分配虚拟内存
+swapon [--show | -s]
+# 无输出说明无虚拟内存
+cat /proc/sys/vm/swappiness
+# 查看 swappiness（内核使用 Swap 倾向）
+grep SwapTotal /proc/meminfo
+# 查看虚拟内存详情
+cat /proc/meminfo | grep Swap
+# 查看内核内存统计（包含 Swap）
+cat /etc/fstab | grep swap
+# 查看开机自动挂载 Swap（永久生效配置）
+
+ulimit -v
+#
+cat /etc/security/limits.conf
+#
+
+swapoff -a
+# 临时关闭所有虚拟内存
+swapon -a
+# 临时开启
+
+
+fallocate -l 1G /swapfile
+# 在根目录生成一个占用 1GB 磁盘空间的空白文件，作为交换文件载体。
+# fallocate：预分配磁盘空间工具，比dd速度极快，直接向磁盘申请整块空间，不会逐字节写 0；
+# -l 1G：-l = length，指定文件大小为 1GiB；支持单位 K/M/G/T；
+# /swapfile：文件存放路径，放在/根目录，文件名固定 swapfile。
+chmod 600 /swapfile
+# 限制 swap 文件权限（似乎没有用，当内存爆满时并没法让 root 单独使用
+mkswap /swapfile
+# 格式化空白文件，写入 swap 专属文件系统元数据，把普通文件转换成Linux 交换分区格式，让内核识别这是虚拟内存文件。
+swapon /swapfile
+# 临时挂载启用 swap（重启失效），让系统立刻开始使用这个 1G 交换文件作为磁盘虚拟内存。
+# 如果需要持久化，需要额外写入/etc/fstab，具体命令是 echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+swapoff /swapfile
+# 先卸载关闭 swap（必须第一步，否则删文件会内核报错），查看 free -h 会显示 swap total 为 0
+rm -f /swapfile
+# 卸载磁盘 swap 文件
+# 如果有在开机配置文件，还需要修改配置文件
+
+
+
+sysctl vm.swappiness=80
+# 临时修改（重启），积极性改为80
+
+vm.overcommit_memory = 0
+# 触发OOM前预留内存，防止整机卡死。内存超额策略，防止无限申请内存
+
+grep -A5 watermark /proc/zoneinfo
+# 查看内存水位线，确认WMARK_MIN=128MB
+
+
+
+# 保护1号systemd、sshd、日志服务，优先驻留物理内存，-1000表示永不OOM杀死，尽量留在物理内存
+echo -1000 > /proc/1/oom_score_adj
+# 可将上面命令写入开机脚本 /etc/rc.local，然后赋予执行权限：chmod +x /etc/rc.local
+
+
+
+mkdir -p /etc/systemd/user/k.slice.d
+vim /etc/systemd/user/k.slice.d/memory-limit.conf
+# 写入：
+[Slice]
+MemoryMax=1200M
+MemorySwapMax=800M
+# 用于限制用户 k 的内存占用
+```
+
+在这里过程中学到了一些命令，记录一下：
+```sh
+top -d 0.1 -o %MEM
+# 按内存占用率从高到低排序，实时刷新，刷新频率为 0.1s
+
+ls -l /proc/6778/exe
+# 查看进程启动命令
+cat /proc/6778/cmdline
+# 查看启动参数，找到业务程序
+
+kill -9 6778
+
+
+ps -ef
+# 查看进程，其中 PPID 就是父PID
+ps -ef | grep 6778
+# 查看与 PID 有关的进程
+ps -o pid,ppid,cmd -p 6778
+# 查看 1481 PID 是由谁调用的。
+cat /proc/6678/status | grep PPid
+# 从 proc 中查看状态，也能找到父PID
+pstree -ap
+# 可以输出树形结构，更加直观
+
+ps aux | grep -E "code|vscode-server|extensionHostConnection" | grep -v grep | wc -l
+# 统计所有code / code-server / node 属于VSCode的进程
+```
+
 
 想要彩色提示，需要三个条件：/bin/bash, .bashrc, .profile
 bashrc 中应该配置了彩色配置，profile 中应该指明了登录时默认加载 bashrc。
@@ -213,6 +328,15 @@ GNU Core Utilities（通常简称为 coreutils）是 GNU 操作系统项目中�
 - users
 - groups
 - tee 从标准输入读取并写入标准输出和文件
+- tty 输出当前标准输入所绑定的终端设备路径
+- stat 查看文件 / 文件系统的状态信息（包括 inode 信息）
+- uname 用来查看特定系统信息
+- tr
+- cut
+- basename
+- dirname
+- sync
+
 
 ```sh
 ls -ahlsv
@@ -233,6 +357,47 @@ df -h
 # 查看服务器磁盘分区的整体使用情况，包含总容量、已用、剩余、挂载点、使用率
 du -h --max-depth=1
 # 当前目录下各文件夹大小
+
+```
+
+## iproute2
+
+现代 Linux 统一使用 iproute2 软件包，替代老旧 net-tools 软件包。iproute2 主要以 ip 为核心工具，附带多个配套工具。
+
+- ip 搭配 addr、link、route、neigh、rule、tunnel 等参数来查改网络相关配置
+- ss 替换 netstat，查看端口连接。【AI】man手册看不到软件包
+-
+
+不属于 iproute2，但也和网络相关？
+- dhclient 已经停止维护，用 nmcli
+
+
+```sh
+ip addr
+# 查看 IP 地址
+ip link
+# 查看网卡硬件、链路状态
+ip route
+# 查看系统路由表
+ip neigh
+# 查看 ARP 表
+
+
+ip link set [网卡名称] up
+# 启动网卡
+
+```
+## NetworkManager
+
+iproute2 是 Linux 内核配套底层网络工具集，由 Linux 内核社区维护，是内核网络栈的直接交互工具。
+而 NetworkManager 是 Freedesktop 开源的上层网络连接管理服务，是一套完整的网络管理解决方案，底层依赖 iproute2，更方便使用。
+
+- nmcli
+- nmtui
+
+```sh
+nmcli connect show
+nmcli connect up [网卡]
 
 ```
 
@@ -320,6 +485,9 @@ systemd-run
 
 systemctl
 # 操作 cgroup 下的 slice / service / scope
+
+systemctl get-default
+# 查看系统默认开机启动目标（默认运行级别），查看是桌面版还是最小精简版
 ```
 
 ### systemd cgroup ^[1]^ ^[2]^
@@ -360,70 +528,63 @@ systemd 以三种不同的 unit 类型暴露了底层内核 cgroups 功能。
 
 #### systemctl
 
-添加 `--runtime` 参数代表仅写入临时内存配置目录 /run/systemd/system.control/user-0.slice.d/，不会持久化到 /etc，方便测试。
-
+##### 查
 ```sh
-systemctl show xxx.slice
-# 查看配置，具体是在查看 /sys/fs/cgroup/xxx.slice/ 文件下的相关文件。
-systemctl show system.slice -p MemoryCurrent
-# 是在读取 cat /sys/fs/cgroup/user.slice/memory.current
+systemctl cat user.slice
+# 查看 user.slice 所有配置（会显示 drop-in 来源路径）
+systemctl show user.slice
+# 查看合并后最终生效的配置信息
+# 具体是在查看 /sys/fs/cgroup/user.slice/ 文件下的相关文件。
+
 systemctl show user-0.slice -p MemoryCurrent
-# 是在读取 cat /sys/fs/cgroup/user.slice/user-0.slice/memory.current
-# 这两个命令，不能通过 /sys/fs/cgroup/user.slice/memory.current; systemctl show user.slice -p MemoryCurrent; 来查看，因为有误差，而且这个误差始终是 systemctl 查看的值会大一点。
+cat /sys/fs/cgroup/user.slice/user-0.slice/memory.current
+# 查看 root 用户当前内存占用
+
 systemctl show system.slice -p IOWeight
 cat /sys/fs/cgroup/system.slice/io.weight
-# 直接查看具体，和 show 的区别在于？？？？？
+# show 和 cat 还是有区别的，区别在于 show 是 systemd 提供的格式，有可能实现 not set 这样的值，而这种值通过 cat 查看，会有一个具体值，也就是默认值
 
+systemctl status user.slice
+# 查看状态
+
+systemctl list-units --type=service,slice,scope
+# 列出所有启用了的 slice、scope、service
+systemctl list-units --type=service | grep network
+# 查看有关 network 的服务。
+```
+
+##### 改
+```sh
 
 systemctl set-property --runtime 子组和配置
 # 修改配置，写入 /run 目录，重启失效
-systemctl set-property 子组和配置
-# 修改配置，？？？
+# 默认是持久化到 /etc 中，想要临时生效，可以添加 --runtime 参数，它将写入临时内存配置目录 /run，重启失效，方便测试
+# 通过 systemctl cat 命令查看 drop-in 来源可以得到配置文件具体位置，包括 /run 和 /etc 的。
+
 systemctl revert xxx.slice
-# 重置配置
+# 重置配置，也就是删除所有 drop-in 文件
+
 systemctl edit system.slice
-# 编辑 drop-in 配置，这个和 set-property 的关系是什么呢？
+# 和 set-property 区别？
 
-systemctl list-units --type=service,slice,scope
-# 列出所有 slice、scope、service
-```
-
-```sh
-systemctl cat user.slice
-# 查看 user.slice 所有配置（包括 drop-in 来源路径）
-systemctl show user.slice
-# 查看合并后最终生效的配置信息
-
+nano xxx文件？？？？
 systemctl daemon-reload
-# 修改单元文件或drp-in 后，需要重启守护进程才生效。
+# 可以手动修改配置（修改单元文件或 drop-in），这种方式修改后，需要重启守护进程 daemon 才会生效。
+# 目的是让 systemd 读取新配置
 # set-property 不需要重启，因为它利用 DBus 运行时即时生效
 # systemctl edit 也不需要，因为它在保存配置后会自动调用。
 
 
-systemctl set-property --runtime user.slice MemoryMax=1.5G MemorySwapMax=0
-# 配置所有用户最大内存占用，包括root用户
-systemctl set-property --runtime user-0.slice MemoryMin=200M
-# 然后再单独为 root 用户配置最小内存占用（不配置不行，VNC同样会无法登录）
-# 那只配置 root 的最小内存呢？测试了，不行，普通用户依旧可以占满内存。
-systemctl show user.slice | grep Memory
-# 查看配置情况
 
 
 systemctl set-property --runtime user-0.slice MemoryMin=
 # 想要恢复默认值，可以直接留空
 systemctl revert user-0.slice
-# 或者直接使用 revert，它会删除该 slice 所有 drop-in 覆盖文件（包含 /run 下 --runtime 生成的临时配置、/etc 持久配置）
+# 或者直接使用 revert，它会删除该 slice 所有 drop-in 文件
 
-systemctl set-property --runtime system.slice MemoryMin=50M
-systemctl revert system.slice
 ```
 
 #### [systemd slice]
-
-<!-- 前面的配置是不合理的，
-user@.slice 是 systemd 模板单元，所有 UID≥1000 的普通用户会话自动生成 user-$UID.slice，可通过模板 drop-in 批量限制，不会作用于 UID=0 的 user-0.slice。
-
-ssh登录时使用的是 system.slice？ssh 登录详细流程 -->
 
 systemd 切片专属命名规则是短横线`-`表达层级父子关系，比如创建了 root-users.slice.d 文件后，会自动派生出 root.slice 父节点，该节点没有独立 .slice 实体文件。
 
@@ -432,6 +593,8 @@ systemd 切片专属命名规则是短横线`-`表达层级父子关系，比如
 - `user-.slice` 是 [slice 模板]，代表每位用户的默认设置。
   - 比如，/etc/systemd/system/user-.slice.d/ 目录下的 *.conf 文件中的配置会被所有 user-PID.slice 所引用。
   - 在 /etc/systemd/system/ 下的配置属于手动配置，通过 set-property 修改的配置是 DBus 运行时持久化接口，它固定输出到 /etc/systemd/system.control，而且后者是新版本 systemd 才有的特性。有关配置文件的优先级，可以查看 [systemd.unit 文档]
+
+需要注意，user-.slice 能作为模板，并不是 systemd 专门指定了一个名叫 user- 的模板，而是由 systemd unit 特性所决定的，其特定对分隔符 `-` 定义了一种配置优先级。
 
 登录时用 PAM + systemd 模板 user@.service 区分 UID，只对 UID≥1000 加载限制
 单独为 root 创建 slice，开机时自动将 root 从 user.slice 中移除。
@@ -490,7 +653,25 @@ IOPressureWatch=
 IOSchedulingClass=
 IOSchedulingPriority=
 
+#### 开机脚本
 
+老式 sysvinit 时代开机执行的脚本文件是 /etc/rc.local，
+如果想用老式开机脚本，需要让 systemd 开启兼容，具体是查看 rc-local.service 是否已经启用。
+
+有三种方式查看
+```sh
+systemctl is-enabled rc-local
+# enabled：已设置开机自启（你执行过 systemctl enable）
+# disabled：未设置开机自启
+# static：默认原生状态，服务文件缺少 [Install] 安装段，无法直接 enable/disable，必须手动启用才能开机运行
+# masked：被屏蔽，完全无法启动
+
+systemctl status rc-local
+# 直接查看状态
+
+systemctl list-unit-files --type=service | grep rc-local
+# 从所有 unit 中找到 rc-local 查看状态
+```
 
 ## shadow-utils
 
@@ -616,6 +797,24 @@ pkill -9 -u k
 
 - hdparm
 - locale
+- curl
+- wget
+
+### 软件管理
+
+- Debian 系
+  - 软件包后缀 `.rpm`，使用 yum（centos7）或者 dnf（centos8+，yum升级），底层调用 rpm
+- RHEL 系
+  - 软件包后缀 `.deb`，使用 apt 管理，底层调用 dpkg
+
+### curl
+
+### wget
+
+```sh
+wget [参数] 下载地址
+
+```
 
 ### [xx]stat
 
